@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard'
 import Companion from './components/Companion'
 import Onboarding from './components/Onboarding'
 import Customize from './components/Customize'
+import QRCode from './components/QRCode'
 import { api } from './api'
 import CrisisModal from './components/CrisisModal'
 import PitchBadge from './components/PitchBadge'
@@ -13,6 +14,7 @@ const NAV = [
   { key: 'home', label: 'Home', ico: '🏡', section: 'Wellness' },
   { key: 'chat', label: 'Chat', ico: '💬', section: 'Wellness' },
   { key: 'voice', label: 'Voice Journal', ico: '🎙️', section: 'Wellness' },
+  { key: 'qr', label: 'Share Bot', ico: '📱', section: 'Share' },
   { key: 'customize', label: 'My Companion', ico: '🎨', section: 'Companion' },
   { key: 'stats', label: 'Progress', ico: '📊', section: 'Insights' },
 ]
@@ -41,6 +43,14 @@ const PAGES = {
     heroTitle: 'Press, speak, release',
     heroBody: 'Sometimes 10 seconds of speaking is lighter than 10 sentences of typing.',
     heroIcon: '🎙️',
+  },
+  qr: {
+    title: 'Share',
+    accent: 'Tena Bot',
+    sub: 'Invite friends to chat with Tena on Telegram.',
+    heroTitle: 'Share the wellness',
+    heroBody: 'Scan this QR code or share the link to help others discover Tena.',
+    heroIcon: '📱',
   },
   customize: {
     title: 'My',
@@ -190,6 +200,7 @@ export default function App() {
         )}
         {tab === 'chat' && <Chat companion={companion} onMoodChange={setChatMood} />}
         {tab === 'voice' && <VoiceJournal />}
+        {tab === 'qr' && <QRCode />}
         {tab === 'customize' && <Customize companion={companion} onUpdate={handleCompanionUpdate} />}
         {tab === 'stats' && <Dashboard />}
 

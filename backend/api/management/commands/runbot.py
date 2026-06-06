@@ -166,8 +166,16 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not msg or not msg.text:
         return
     await msg.chat.send_action("typing")
+    
+    # Check for hobby-related requests
+    text_lower = msg.text.lower()
+    if any(word in text_lower for word in ['hobby', 'hobbies', 'interest', 'fun', 'activity', 'recommend']):
+        reply = await _get_hobby_recommendations(msg.text)
+        await msg.reply_text(reply, reply_markup=_kb_browser_button())
+        return
+    
     crisis, reply, resources = await _chat_with_ai(msg.from_user, msg.text)
-    await msg.reply_text(reply)
+    await msg.reply_text(reply, reply_markup=_kb_browser_button())
     if crisis and resources:
         lines = ["*Right now, please reach out:*"]
         for r in resources:
@@ -178,6 +186,88 @@ async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if r.get("address"):
                 lines.append(f"  _{r['address']}_")
         await msg.reply_markdown("\n".join(lines))
+
+
+async def on_voice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.message
+    if not msg or not msg.voice:
+        return
+    await msg.chat.send_action("typing")
+    
+    try:
+        # Download voice file
+        voice_file = await msg.voice.get_file()
+        voice_bytes = await voice_file.download_as_bytearray()
+        
+        # Transcribe using Gemini (you'd need to implement this)
+        # For now, we'll use a placeholder
+        transcription = "Voice message received. I'm working on voice transcription!"
+        
+        await msg.reply_text(f"🎤 Voice: {transcription}", reply_markup=_kb_browser_button())
+    except Exception as e:
+        await msg.reply_text("Sorry, I couldn't process your voice message. Try typing instead!")
+
+
+@sync_to_async
+def _get_hobby_recommendations(text: str) -> str:
+    """Get hobby recommendations based on user input"""
+    text_lower = text.lower()
+    
+    if any(word in text_lower for word in ['stress', 'anxious', 'overwhelmed']):
+        return """🧘‍♀️ *Relaxing hobbies for stress relief:*
+• Yoga & meditation
+• Painting or drawing
+• Gardening
+• Listening to calming music
+• Reading fiction
+• Walking in nature
+
+Try one for 15 minutes today!"""
+    
+    elif any(word in text_lower for word in ['creative', 'art', 'make']):
+        return """🎨 *Creative hobby ideas:*
+• Sketching or painting
+• Photography
+• Writing stories or poetry
+• DIY crafts
+• Playing an instrument
+• Cooking new recipes
+
+What sounds most exciting to you?"""
+    
+    elif any(word in text_lower for word in ['active', 'sport', 'move']):
+        return """🏃‍♂️ *Active hobby suggestions:*
+• Running or jogging
+• Dancing
+• Swimming
+• Cycling
+• Team sports
+• Hiking
+
+What's your fitness level like?"""
+    
+    else:
+        return """🌟 *General hobby recommendations:*
+• Learning a new language
+• Photography
+• Coding/programming
+• Playing board games
+• Bird watching
+• Knitting or crochet
+• Chess
+• Blogging
+
+What kind of activities interest you most?"""
+
+
+def _kb_browser_button():
+    """Return keyboard with 'Open in browser' button"""
+    web_app_url = getattr(settings, 'MINI_APP_URL', 'http://localhost:5175')
+    if web_app_url.startswith('https://'):
+        return InlineKeyboardMarkup([[
+            InlineKeyboardButton("🌐 Open in browser", web_app=WebAppInfo(url=web_app_url))
+        ]])
+    return None
 
 
 async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -224,22 +314,13 @@ class Command(BaseCommand):
             self.stderr.write("TELEGRAM_BOT_TOKEN missing in .env")
             return
 
-        app = (
-            Application.builder()
-            .token(token)
-            .connect_timeout(30.0)
-            .read_timeout(30.0)
-            .write_timeout(30.0)
-            .pool_timeout(30.0)
-            .get_updates_connect_timeout(30.0)
-            .get_updates_read_timeout(60.0)
-            .build()
-        )
+        app = Application.builder().token(token).build()
         app.add_handler(CommandHandler("start", cmd_start))
         app.add_handler(CommandHandler("check", cmd_check))
         app.add_handler(CommandHandler("week", cmd_week))
         app.add_handler(CallbackQueryHandler(on_callback))
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_text))
+        app.add_handler(MessageHandler(filters.VOICE, on_voice))
 
         # Daily 18:00 Africa/Addis_Ababa
         try:

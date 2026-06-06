@@ -1,24 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
+import { containsCrisisKeywords } from '../utils/crisisDetector'
 
 import CrisisCard from './CrisisCard'
 import Companion from './Companion'
 import { haptic } from '../telegram'
 
-export default function Chat({ companion, onMoodChange }) {
+export default function Chat({ companion, onMoodChange, onCrisis }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [typing, setTyping] = useState(false)
   const [crisis, setCrisis] = useState(null)
-
-import { containsCrisisKeywords } from '../utils/crisisDetector'
-import { haptic } from '../telegram'
-
-export default function Chat({ onCrisis }) {
-  const [messages, setMessages] = useState([])
-  const [input, setInput] = useState('')
-  const [sending, setSending] = useState(false)
 
   const boxRef = useRef(null)
 
@@ -82,37 +75,14 @@ export default function Chat({ onCrisis }) {
 
   return (
     <>
-
       {crisis && <CrisisCard resources={crisis.resources} message={crisis.message} />}
       <div className="companion-chat-area">
         <div className="companion-col">
           <Companion mood={typing ? 'thinking' : (sending ? 'listening' : 'idle')} companion={companion} showStatus={true} />
-
-      <div className="card">
-        <h2>Chat with Tena</h2>
-        <div className="chat" ref={boxRef}>
-          {messages.length === 0 && (
-            <>
-              <div className="muted">Say hi — in English, Amharic, or both. Endemen neh? 👋</div>
-              <div className="chips">
-                <span className="chip" onClick={() => setInput("I'm stressed about my exams")}>📚 Exam stress</span>
-                <span className="chip" onClick={() => setInput("Things are too expensive lately")}>💸 Cost of living</span>
-                <span className="chip" onClick={() => setInput("I feel exhausted and burned out")}>🥱 Burnout</span>
-                <span className="chip" onClick={() => setInput("Family expectations are heavy")}>👨‍👩‍👧 Family</span>
-              </div>
-            </>
-          )}
-          {messages.map((m) => (
-            <div key={m.id} className={`msg ${m.role} ${m.crisis_flag ? 'crisis' : ''}`}>
-              {m.content}
-            </div>
-          ))}
-
         </div>
         <div className="chat-col">
           <div className="card">
             <h2>Chat with Tena</h2>
-
             <div className="chat" ref={boxRef}>
               {messages.length === 0 && (
                 <>
@@ -138,7 +108,6 @@ export default function Chat({ onCrisis }) {
                 </div>
               )}
             </div>
-
             <div className="input-row">
               <input
                 placeholder="Type how you're feeling..."
