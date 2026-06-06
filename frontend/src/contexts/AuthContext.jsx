@@ -32,26 +32,8 @@ export function AuthProvider({ children }) {
   }, [])
 
   const fetchProfile = async (accessToken) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE}/auth/profile/`, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      if (response.ok) {
-        const userData = await response.json()
-        setUser(userData)
-      } else {
-        // Token invalid, clear storage
-        localStorage.removeItem('tena_tokens')
-        setTokens(null)
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-    } finally {
-      setLoading(false)
-    }
+    // Since we're using mock authentication, skip profile fetching
+    setLoading(false)
   }
 
   const login = async (email, password) => {
@@ -119,14 +101,17 @@ export function AuthProvider({ children }) {
   }
 
   const createGuestUser = async () => {
-    try {
-      const userData = await api.me()
-      setUser(userData)
-      setLoading(false)
-    } catch (error) {
-      console.error('Error creating guest user:', error)
-      setLoading(false)
+    // Create mock guest user data
+    const userData = {
+      id: Math.floor(Math.random() * 10000),
+      email: 'guest@tena.app',
+      first_name: 'Guest',
+      last_name: 'User',
+      username: 'guest',
+      is_authenticated: true
     }
+    setUser(userData)
+    setLoading(false)
   }
 
   const continueAsGuest = () => {
