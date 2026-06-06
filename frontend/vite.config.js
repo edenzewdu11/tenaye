@@ -7,4 +7,8 @@ export default defineConfig({
     port: 5173,
     host: true,
   },
+  optimizeDeps: {
+    exclude: ['@imgly/background-removal'],
+  },
+  assetsInclude: ['**/*.wasm', '**/*.ort'],
 })
