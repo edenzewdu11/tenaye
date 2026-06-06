@@ -153,11 +153,12 @@ def _chat_with_ai(tg_user, text: str):
                                    content=CRISIS_RESPONSE["message"], crisis_flag=True)
         return True, CRISIS_RESPONSE["message"], CRISIS_RESPONSE["resources"]
 
+    # Only get Telegram messages, not web messages
     history = [{"role": m.role, "content": m.content}
-               for m in ChatMessage.objects.filter(user=user).order_by("created_at")[:40]]
-    ChatMessage.objects.create(user=user, role="user", content=text)
+               for m in ChatMessage.objects.filter(user=user, source='telegram').order_by("created_at")[:40]]
+    ChatMessage.objects.create(user=user, role="user", content=text, source='telegram')
     reply = chat_reply(history, text)
-    ChatMessage.objects.create(user=user, role="assistant", content=reply)
+    ChatMessage.objects.create(user=user, role="assistant", content=reply, source='telegram')
     return False, reply, []
 
 

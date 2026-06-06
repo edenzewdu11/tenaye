@@ -39,10 +39,13 @@ class CheckIn(models.Model):
 class ChatMessage(models.Model):
     USER, ASSISTANT = "user", "assistant"
     ROLE_CHOICES = [(USER, "User"), (ASSISTANT, "Assistant")]
+    TELEGRAM, WEB = "telegram", "web"
+    SOURCE_CHOICES = [(TELEGRAM, "Telegram"), (WEB, "Web")]
 
     user = models.ForeignKey(TgUser, on_delete=models.CASCADE, related_name="messages")
     role = models.CharField(max_length=16, choices=ROLE_CHOICES)
     content = models.TextField()
+    source = models.CharField(max_length=16, choices=SOURCE_CHOICES, default=WEB)
     is_voice = models.BooleanField(default=False)
     crisis_flag = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

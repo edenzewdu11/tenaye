@@ -29,7 +29,7 @@ def me(request):
 def chat(request):
     user = request.user
     if request.method == "GET":
-        msgs = ChatMessage.objects.filter(user=user)[:200]
+        msgs = ChatMessage.objects.filter(user=user, source='web')[:200]
         return Response(ChatMessageSerializer(msgs, many=True).data)
 
     content = (request.data.get("content") or "").strip()
@@ -38,10 +38,10 @@ def chat(request):
 
     # Crisis tripwire
     if is_crisis(content):
-        ChatMessage.objects.create(user=user, role="user", content=content, crisis_flag=True)
+        ChatMessage.objects.create(user=user, role="user", content=content, crisis_flag=True, source='web')
         ChatMessage.objects.create(
             user=user, role="assistant",
-            content=CRISIS_RESPONSE["message"], crisis_flag=True,
+            content=CRISIS_RESPONSE["message"], crisis_flag=True, source='web',
         )
         return Response({
             "crisis": True,
@@ -49,12 +49,12 @@ def chat(request):
             "resources": CRISIS_RESPONSE["resources"],
         })
 
-    # Build history
+    # Build history - only web messages
     history = [
         {"role": m.role, "content": m.content}
-        for m in ChatMessage.objects.filter(user=user).order_by("created_at")[:40]
+        for m in ChatMessage.objects.filter(user=user, source='web').order_by("created_at")[:40]
     ]
-    user_msg = ChatMessage.objects.create(user=user, role="user", content=content)
+    user_msg = ChatMessage.objects.create(user=user, role="user", content=content, source='web')
     reply = chat_reply(history, content)
     
     if "CRISIS_TRIGGERED" in reply:
@@ -62,7 +62,7 @@ def chat(request):
         user_msg.save()
         ChatMessage.objects.create(
             user=user, role="assistant",
-            content=CRISIS_RESPONSE["message"], crisis_flag=True,
+            content=CRISIS_RESPONSE["message"], crisis_flag=True, source='web',
         )
         return Response({
             "crisis": True,
@@ -70,7 +70,7 @@ def chat(request):
             "resources": CRISIS_RESPONSE["resources"],
         })
 
-    ChatMessage.objects.create(user=user, role="assistant", content=reply)
+    ChatMessage.objects.create(user=user, role="assistant", content=reply, source='web')
 
     return Response({"crisis": False, "reply": reply})
 

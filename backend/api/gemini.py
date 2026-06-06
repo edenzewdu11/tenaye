@@ -132,15 +132,97 @@ def transcribe_and_analyze(audio_bytes: bytes, mime_type: str = "audio/webm") ->
 
 
 def _fallback_reply(user_message: str) -> str:
+    import random
     msg = (user_message or "").lower()
-    if any(k in msg for k in ["exam", "moe", "matric", "test"]):
-        return ("Exams pressure is real — yene guadegna, breathe. "
-                "What's the one subject weighing on you most right now?")
-    if any(k in msg for k in ["teff", "price", "money", "rent", "cost"]):
-        return ("Yeah, prices in Addis are no joke right now. "
-                "Tell me one small thing that felt okay today, even briefly.")
-    if any(k in msg for k in ["tired", "exhausted", "burned"]):
-        return ("That sounds heavy. Step away from the screen for 2 minutes — "
-                "stand up, drink water, then come back and tell me what hurts most.")
-    return ("Endemen neh/nesh? I'm here. Tell me a bit more about what's going on — "
-            "no rush, no judgment.")
+    
+    # Academic/Study stress
+    if any(k in msg for k in ["exam", "moe", "matric", "test", "study", "school", "university"]):
+        responses = [
+            "Exams pressure is real — yene guadegna, breathe. What's the one subject weighing on you most right now?",
+            "I know exam stress can feel overwhelming. Have you tried breaking study time into small 25-minute chunks?",
+            "MoE season is tough. Remember to sleep - your brain needs rest to retain information.",
+            "You're capable of handling this. What study method has worked for you before?"
+        ]
+        return random.choice(responses)
+    
+    # Financial stress
+    if any(k in msg for k in ["teff", "price", "money", "rent", "cost", "expensive", "birr", "dollar"]):
+        responses = [
+            "Yeah, prices in Addis are no joke right now. Tell me one small thing that felt okay today, even briefly.",
+            "The cost of living is stressful for everyone right now. What's one small comfort you can give yourself today?",
+            "I hear you about the expenses. Are there any free activities that help you de-stress?",
+            "Financial pressure is heavy. Remember that your worth isn't measured by your bank account."
+        ]
+        return random.choice(responses)
+    
+    # Health concerns
+    if any(k in msg for k in ["sick", "ill", "unwell", "fever", "headache", "pain", "hurt", "medicine", "doctor"]):
+        responses = [
+            "I'm sorry you're feeling sick. Have you been able to rest and drink plenty of water?",
+            "That sounds rough. Are you able to see a doctor or get medical care if needed?",
+            "Being sick is exhausting. Focus on rest - your body needs time to heal.",
+            "I hope you feel better soon. Is there someone who can help take care of you?"
+        ]
+        return random.choice(responses)
+    
+    # Emotional/mental state
+    if any(k in msg for k in ["tired", "exhausted", "burned", "stress", "anxious", "worried", "sad", "depressed"]):
+        responses = [
+            "That sounds heavy. Step away from the screen for 2 minutes — stand up, drink water, then come back and tell me what hurts most.",
+            "You sound exhausted. When was the last time you truly rested, not just slept?",
+            "Burnout is real. What's one thing you can say 'no' to today to protect your energy?",
+            "Your feelings are valid. What would make today even 1% better?"
+        ]
+        return random.choice(responses)
+    
+    # Family/relationships
+    if any(k in msg for k in ["family", "parent", "mother", "father", "sister", "brother", "friend", "relationship"]):
+        responses = [
+            "Family dynamics can be complex. What's happening in your relationships that's on your mind?",
+            "I'm here to listen about your family situation. What would be most helpful to talk about?",
+            "Relationships can bring both joy and stress. How are your connections affecting your wellbeing?",
+            "You're not alone in dealing with family pressures. Tell me more about what you're facing."
+        ]
+        return random.choice(responses)
+    
+    # Work/career
+    if any(k in msg for k in ["work", "job", "boss", "career", "office", "colleague"]):
+        responses = [
+            "Work stress can spill into everything. What's happening at your job that's weighing on you?",
+            "Career decisions are big ones. What aspect of your work life feels most challenging right now?",
+            "I understand workplace pressures. What would make your work situation more manageable?",
+            "Your work doesn't define your worth. How can we bring more balance to your life?"
+        ]
+        return random.choice(responses)
+    
+    # Positive topics
+    if any(k in msg for k in ["happy", "good", "great", "excited", "love", "thank", "wonderful"]):
+        responses = [
+            "That's wonderful to hear! What's bringing you this joy today?",
+            "I love that you're feeling good! Tell me more about what's going well.",
+            "Thank you for sharing this positive moment with me. What made this happen?",
+            "Your happiness matters! Let's celebrate this good feeling together."
+        ]
+        return random.choice(responses)
+    
+    # General wellness check-ins
+    if any(k in msg for k in ["how are you", "what's up", "hi", "hello", "hey"]):
+        responses = [
+            "Selam! I'm here to support you. How are you really doing today?",
+            "Endemen neh/nesh? I'm glad you reached out. What's on your mind?",
+            "Hello! I'm here to listen. What would be most helpful to talk about right now?",
+            "Hi! I'm here for you. Take your time - what's happening in your world today?"
+        ]
+        return random.choice(responses)
+    
+    # General conversational responses
+    responses = [
+        "I'm here to support you on your wellness journey. Tell me more about what's on your mind.",
+        "Thank you for sharing with me. Your mental health matters - let's talk about what you need.",
+        "I'm listening without judgment. What would be most helpful for you right now?",
+        "Your wellbeing is important. How can I best support you today?",
+        "I'm here to help you navigate whatever you're facing. What feels most pressing?",
+        "You don't have to face this alone. I'm here to walk with you through it.",
+        "Taking care of your mental health is brave. What's one thing I can help you with today?"
+    ]
+    return random.choice(responses)
