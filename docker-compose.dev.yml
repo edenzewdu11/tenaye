@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: tena_db_dev
+    environment:
+      POSTGRES_DB: tena
+      POSTGRES_USER: tena_user
+      POSTGRES_PASSWORD: tena_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # Django Backend (Development)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tena_backend_dev
+    environment:
+      - DATABASE_URL=postgresql://tena_user:tena_password@db:5432/tena
+      - DJANGO_SETTINGS_MODULE=core.settings
+      - DJANGO_DEBUG=true
+      - DJANGO_SECRET_KEY=dev-secret-key-change-me
+      - TELEGRAM_BOT_TOKEN=8219870105:AAHGiy0tMyrAD16iK_Va3jKwekznzAV43bw
+      - TELEGRAM_BOT_USERNAME=TenawellnessBot
+      - MINI_APP_URL=http://localhost:3000
+      - GEMINI_API_KEY=AIzaSyA_B62fpN6fiOEM0SZJIq1JHp84V73twWg
+      - FRONTEND_ORIGIN=http://localhost:3000
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  # React Frontend (Development)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: tena_frontend_dev
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_BASE=http://localhost:8000/api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:

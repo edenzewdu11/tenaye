@@ -56,6 +56,7 @@ def _kb_open_app():
         return None
     return InlineKeyboardMarkup([[
         InlineKeyboardButton("💬 Open Tena", web_app=WebAppInfo(url=url)),
+        InlineKeyboardButton("🌐 Open in browser", url=url),
     ]])
 
 
@@ -114,6 +115,7 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "ሰላም 👋 I'm *Tena* — your wellness companion.\n\n"
         "• Tap *Open Tena* for the full app (chat, voice journal, dashboard).\n"
+        "• Tap *Open in browser* to use the website version.\n"
         "• Use /check anytime for a quick mood check-in.\n"
         "• Use /week to see your last 7 days."
     )
