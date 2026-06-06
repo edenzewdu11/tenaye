@@ -5,6 +5,7 @@ import Chat from './components/Chat'
 import VoiceJournal from './components/VoiceJournal'
 import Dashboard from './components/Dashboard'
 import CheckIn from './components/CheckIn'
+import Home from './components/Home'
 import Companion from './components/Companion'
 import Onboarding from './components/Onboarding'
 import Customize from './components/Customize'
@@ -52,19 +53,11 @@ const PAGES = {
     heroBody: 'Sometimes 10 seconds of speaking is lighter than 10 sentences of typing.',
     heroIcon: '🎙️',
   },
-  explore: {
-    title: 'Explore',
-    accent: 'Places',
-    sub: 'Tell Tena what you feel like doing — and discover where to go.',
-    heroTitle: 'Your city, your vibe',
-    heroBody: 'Find the perfect spot for your mood. From parks to cafes, Tena knows Addis.',
-    heroIcon: '🗺️',
-  },
   qr: {
     title: 'Share',
     accent: 'Tena Bot',
-    sub: 'Invite friends to chat with Tena on Telegram.',
-    heroTitle: 'Share the wellness',
+    sub: 'Share the wellness companion with friends and family.',
+    heroTitle: 'Spread wellness',
     heroBody: 'Help others discover their path to mental well-being.',
     heroIcon: '📱',
   },
@@ -83,6 +76,14 @@ const PAGES = {
     heroTitle: 'See how far you\'ve come',
     heroBody: 'Every check-in, every conversation, every step forward matters.',
     heroIcon: '📊',
+  },
+  explore: {
+    title: 'Explore',
+    accent: 'Places',
+    sub: 'Tell Tena what you feel like doing — and discover where to go.',
+    heroTitle: 'Your city, your vibe',
+    heroBody: 'Parks, cafes, cinemas, game zones — Tena knows Addis. Just say what you\'re in the mood for.',
+    heroIcon: '🗺️',
   },
 }
 
@@ -116,6 +117,19 @@ function MainApp() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
+  const [activeCrisis, setActiveCrisis] = useState(null)
+  const [recommendations, setRecommendations] = useState([])
+
+  const fetchRecommendations = useCallback(() => {
+    api.getRecommendations()
+      .then(setRecommendations)
+      .catch((e) => console.error("Failed to fetch recommendations:", e))
+  }, [])
+
+  useEffect(() => {
+    api.me().then(setMe).catch((e) => setErr(e.message))
+    fetchRecommendations()
+  }, [fetchRecommendations])
   const isMobile = () => window.innerWidth < 820
 
   useEffect(() => {
@@ -308,6 +322,33 @@ function MainApp() {
                 </div>
               </div>
 
+            <div className="home-quick-grid">
+              <button className="quick-tile q-gold" onClick={() => setTab('chat')}>
+                <div className="quick-ico">💬</div>
+                <div className="quick-title">Talk to Tena</div>
+                <div className="quick-sub">Vent, reflect, code-switch</div>
+              </button>
+              <button className="quick-tile q-terra" onClick={() => setTab('voice')}>
+                <div className="quick-ico">🎙️</div>
+                <div className="quick-title">Voice Journal</div>
+                <div className="quick-sub">Speak it, release it</div>
+              </button>
+              <button className="quick-tile q-green" onClick={() => setTab('stats')}>
+                <div className="quick-ico">📈</div>
+                <div className="quick-title">My Progress</div>
+                <div className="quick-sub">Last 7 days at a glance</div>
+              </button>
+              <button className="quick-tile q-coffee" onClick={() => setTab('explore')}>
+                <div className="quick-ico">🗺️</div>
+                <div className="quick-title">Explore Places</div>
+                <div className="quick-sub">Find your next outing</div>
+              </button>
+            </div>
+
+            <div className="home-bottom-section">
+              <div className="home-checkin-tip-row">
+                <div className="home-checkin-col">
+                  <CheckIn onLogged={handleCheckinLogged} />
               {/* Enhanced Quick Actions */}
               <div className="home-quick enhanced">
                 <div className="section-header">
@@ -395,7 +436,8 @@ function MainApp() {
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
           {tab === 'chat' && <Chat me={me} />}
           {tab === 'voice' && <VoiceJournal me={me} />}
           {tab === 'explore' && <Explore />}
