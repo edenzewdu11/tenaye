@@ -5,6 +5,7 @@ import Chat from './components/Chat'
 import VoiceJournal from './components/VoiceJournal'
 import Dashboard from './components/Dashboard'
 import CheckIn from './components/CheckIn'
+import Home from './components/Home'
 import Companion from './components/Companion'
 import Onboarding from './components/Onboarding'
 import Customize from './components/Customize'
@@ -215,7 +216,7 @@ function MainApp() {
         </div>
 
         <div className="page-content">
-          {tab === 'home' && <CheckIn me={me} setMe={setMe} onCrisis={setCrisis} />}
+          {tab === 'home' && <Home me={me} setMe={setMe} onCrisis={setCrisis} />}
           {tab === 'chat' && <Chat me={me} />}
           {tab === 'voice' && <VoiceJournal me={me} />}
           {tab === 'qr' && <QRCode />}
