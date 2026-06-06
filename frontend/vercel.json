@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "name": "tena",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "env": {
+    "VITE_API_BASE": "@api_base_url"
+  }
+}
