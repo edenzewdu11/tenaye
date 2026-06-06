@@ -32,27 +32,27 @@ export default function CheckIn({ onLogged }) {
   }
 
   return (
-    <div className="card">
+    <div className="card card-checkin">
       <h2>Daily Check-in</h2>
-      <div className="mood-row">
+      <div className="mood-pills">
         {MOODS.map((m) => (
           <button
             key={m.key}
-            className={`mood-btn ${m.key} ${selected === m.key ? 'selected' : ''}`}
+            className={`mood-pill ${m.key} ${selected === m.key ? 'selected' : ''}`}
             onClick={() => pick(m.key)}
           >
-            <span className="emoji">{m.emoji}</span>
+            <span className="pill-emoji">{m.emoji}</span>
             {m.label}
           </button>
         ))}
       </div>
-      <div className="input-row">
+      <div className="input-row input-row-checkin">
         <input
           placeholder="Anything specific? (optional)"
           value={note}
           onChange={(e) => setNote(e.target.value)}
         />
-        <button className="btn" onClick={save} disabled={!selected || saving}>
+        <button className="btn btn-checkin" onClick={save} disabled={!selected || saving}>
           {saving ? '...' : 'Log'}
         </button>
       </div>
