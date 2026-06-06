@@ -216,7 +216,58 @@ function MainApp() {
         </div>
 
         <div className="page-content">
-          {tab === 'home' && <Home me={me} setMe={setMe} onCrisis={setCrisis} />}
+          {tab === 'home' && (
+            <div className="home-page">
+              <div className="home-greeting">
+                <div className="home-greeting-text">
+                  <h2>{PAGES[tab].heroTitle}</h2>
+                  <p>{PAGES[tab].heroBody}</p>
+                </div>
+                <div className="home-greeting-art">
+                  <div className="character-avatar">
+                    <img src="/images/normalimage.png" alt="Tena Companion" className="character-img" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="home-quick">
+                <h3>Quick Actions</h3>
+                <div className="home-quick-grid">
+                  <button className="quick-tile" onClick={() => setTab('chat')}>
+                    <div className="tile-icon">💬</div>
+                    <h4>Chat with Tena</h4>
+                    <p>Talk about what's on your mind</p>
+                  </button>
+                  <button className="quick-tile" onClick={() => setTab('voice')}>
+                    <div className="tile-icon">🎙️</div>
+                    <h4>Voice Journal</h4>
+                    <p>Speak your thoughts freely</p>
+                  </button>
+                  <button className="quick-tile" onClick={() => setTab('stats')}>
+                    <div className="tile-icon">📊</div>
+                    <h4>Progress</h4>
+                    <p>See your wellness journey</p>
+                  </button>
+                  <button className="quick-tile" onClick={() => setTab('customize')}>
+                    <div className="tile-icon">🎨</div>
+                    <h4>Customize</h4>
+                    <p>Personalize your companion</p>
+                  </button>
+                </div>
+              </div>
+
+              <div className="home-checkin-tip-row">
+                <CheckIn me={me} setMe={setMe} onCrisis={setCrisis} />
+                <div className="home-tip">
+                  <div className="tip-icon">💡</div>
+                  <div className="tip-content">
+                    <h3>Today's Tip</h3>
+                    <p>Take 3 deep breaths before responding to stressful situations. It gives you a moment to think and react more calmly.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           {tab === 'chat' && <Chat me={me} />}
           {tab === 'voice' && <VoiceJournal me={me} />}
           {tab === 'qr' && <QRCode />}
