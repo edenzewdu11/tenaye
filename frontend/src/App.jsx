@@ -198,15 +198,11 @@ export default function App() {
             </div>
           </div>
         )}
-        {tab === 'chat' && <Chat companion={companion} onMoodChange={setChatMood} />}
-        {tab === 'voice' && <VoiceJournal />}
+        {tab === 'chat' && <Chat companion={companion} onMoodChange={setChatMood} onCrisis={setActiveCrisis} />}
+        {tab === 'voice' && <VoiceJournal onCrisis={setActiveCrisis} />}
         {tab === 'qr' && <QRCode />}
         {tab === 'customize' && <Customize companion={companion} onUpdate={handleCompanionUpdate} />}
         {tab === 'stats' && <Dashboard />}
-
-        {(tab === 'home' || tab === 'stats') && <Dashboard />}
-        {tab === 'chat' && <Chat onCrisis={setActiveCrisis} />}
-        {tab === 'voice' && <VoiceJournal onCrisis={setActiveCrisis} />}
 
       </main>
 
