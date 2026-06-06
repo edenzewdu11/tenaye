@@ -3,12 +3,11 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, CartesianGrid,
 } from 'recharts'
 import { api } from '../api'
-import CheckIn from './CheckIn'
 
 const COLORS = { good: '#22c55e', surviving: '#f59e0b', burned: '#ef4444' }
 const LABELS = { 1: 'Burned', 2: 'Surviving', 3: 'Good' }
 
-export default function Dashboard() {
+export default function Dashboard({ refreshKey = 0 }) {
   const [data, setData] = useState(null)
 
   async function refresh() {
@@ -18,7 +17,7 @@ export default function Dashboard() {
     } catch {}
   }
 
-  useEffect(() => { refresh() }, [])
+  useEffect(() => { refresh() }, [refreshKey])
 
   const series = (data?.series || []).map((s) => ({
     ...s,
@@ -28,8 +27,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <CheckIn onLogged={refresh} />
-      <div className="card">
+      <div className="card card-dashboard">
         <h2>Last 7 days</h2>
         <div className="dash-stats">
           <div className="stat"><div className="v">{data?.average ?? '—'}</div><div className="l">Avg</div></div>

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import Chat from './components/Chat'
 import VoiceJournal from './components/VoiceJournal'
 import Dashboard from './components/Dashboard'
+import CheckIn from './components/CheckIn'
 import Companion from './components/Companion'
 import Onboarding from './components/Onboarding'
 import Customize from './components/Customize'
@@ -80,6 +81,7 @@ export default function App() {
   const [onboarding, setOnboarding] = useState(() => !localStorage.getItem('tena-onboarded'))
   const [theme, setTheme] = useState(() => localStorage.getItem('tena-theme') || 'warm')
   const [chatMood, setChatMood] = useState('idle')
+  const [dashRefreshKey, setDashRefreshKey] = useState(0)
   const [companion, setCompanion] = useState(() => {
     try {
       const saved = localStorage.getItem('tena-companion')
@@ -111,6 +113,10 @@ export default function App() {
     setCompanion(updated)
     localStorage.setItem('tena-companion', JSON.stringify(updated))
   }, [companion])
+
+  const handleCheckinLogged = useCallback(() => {
+    setDashRefreshKey(k => k + 1)
+  }, [])
 
   const sections = [...new Set(NAV.map((n) => n.section))]
   const page = PAGES[tab]
@@ -186,37 +192,36 @@ export default function App() {
           </button>
         </div>
 
-        <section className="hero">
-          <div className="hero-icon">{page.heroIcon}</div>
-          <h2>{page.heroTitle}</h2>
-          <p>{page.heroBody}</p>
-        </section>
+        {tab !== 'home' && (
+          <section className="hero">
+            <div className="hero-icon">{page.heroIcon}</div>
+            <h2>{page.heroTitle}</h2>
+            <p>{page.heroBody}</p>
+          </section>
+        )}
 
         {err && (
-          <div className="card" style={{ borderColor: '#f5c6cb' }}>
-            <strong style={{ color: '#721c24' }}>Connection issue:</strong>
-            <div className="muted">{err}</div>
-            <div className="muted" style={{ marginTop: 6 }}>
-              Make sure the Django server is running on :8000 and your <code>.env</code> is configured.
-            </div>
+          <div className="toast-error">
+            <span>⚠️ {err} — Check the server is running on :8000 and your .env is configured.</span>
+            <button className="toast-close" onClick={() => setErr(null)}>×</button>
           </div>
         )}
 
         {tab === 'home' && (
           <div className="home-layout">
-            <div className="home-greeting card">
+            <div className="home-greeting">
               <div className="home-greeting-text">
                 <span className="home-eyebrow">{(() => {
                   const h = new Date().getHours()
-                  if (h < 12) return 'Selam · Good morning'
-                  if (h < 18) return 'Selam · Good afternoon'
-                  return 'Selam · Good evening'
+                  if (h < 12) return 'Selam — Good morning'
+                  if (h < 18) return 'Selam — Good afternoon'
+                  return 'Selam — Good evening'
                 })()}</span>
                 <h2>{me?.first_name ? `${me.first_name},` : 'Friend,'} <span className="accent">how is your heart today?</span></h2>
                 <p>Take a breath. I'm right here — log a mood, talk it out, or just sit with me a moment.</p>
                 <div className="home-cta-row">
-                  <button className="btn btn-primary" onClick={() => setTab('chat')}>💬 Start a chat</button>
-                  <button className="btn btn-ghost" onClick={() => setTab('voice')}>🎙️ Voice journal</button>
+                  <button className="btn-primary" onClick={() => setTab('chat')}>💬 Start a chat</button>
+                  <button className="btn-ghost" onClick={() => setTab('voice')}>🎙️ Voice journal</button>
                 </div>
               </div>
               <div className="home-greeting-art">
@@ -247,16 +252,21 @@ export default function App() {
               </button>
             </div>
 
-            <div className="home-grid-bottom">
-              <div className="home-dashboard">
-                <Dashboard />
+            <div className="home-bottom-section">
+              <div className="home-checkin-tip-row">
+                <div className="home-checkin-col">
+                  <CheckIn onLogged={handleCheckinLogged} />
+                </div>
+                <aside className="home-tip">
+                  <div className="home-tip-badge">Today's tip</div>
+                  <h3>The 5-4-3-2-1 reset</h3>
+                  <p>Feeling overwhelmed? Name <b>5</b> things you see, <b>4</b> you can touch, <b>3</b> you hear, <b>2</b> you smell, and <b>1</b> you taste. It tells your nervous system: <i>you are safe</i>.</p>
+                  <div className="home-tip-foot">— Tena · ጤና</div>
+                </aside>
               </div>
-              <aside className="home-tip card">
-                <div className="home-tip-badge">Today's tip</div>
-                <h3>The 5-4-3-2-1 reset</h3>
-                <p>Feeling overwhelmed? Name <b>5</b> things you see, <b>4</b> you can touch, <b>3</b> you hear, <b>2</b> you smell, and <b>1</b> you taste. It tells your nervous system: <i>you are safe</i>.</p>
-                <div className="home-tip-foot">— Tena · ጤና</div>
-              </aside>
+              <div className="home-dashboard-wide">
+                <Dashboard refreshKey={dashRefreshKey} />
+              </div>
             </div>
           </div>
         )}
@@ -264,7 +274,7 @@ export default function App() {
         {tab === 'voice' && <VoiceJournal onCrisis={setActiveCrisis} />}
         {tab === 'qr' && <QRCode />}
         {tab === 'customize' && <Customize companion={companion} onUpdate={handleCompanionUpdate} />}
-        {tab === 'stats' && <Dashboard />}
+        {tab === 'stats' && <Dashboard refreshKey={dashRefreshKey} />}
 
       </main>
 
