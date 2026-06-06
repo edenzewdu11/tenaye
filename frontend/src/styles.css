@@ -2954,6 +2954,45 @@ body::after {
   transform: rotate(20deg);
 }
 
+/* Sidebar Theme Toggle */
+.sidebar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sidebar-theme-toggle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--warm-panel);
+  border: 2px solid var(--warm-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.sidebar-theme-toggle:hover {
+  border-color: var(--gold);
+  transform: scale(1.1);
+}
+
+.sidebar-theme-toggle .theme-icon {
+  font-size: 14px;
+  transition: transform var(--transition);
+}
+
+.sidebar-theme-toggle:hover .theme-icon {
+  transform: rotate(20deg);
+}
+
+[data-theme="night"] .sidebar-theme-toggle {
+  background: #2a2a2a;
+  border-color: rgba(212, 160, 23, 0.3);
+}
+
 .home-quick-grid.enhanced {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

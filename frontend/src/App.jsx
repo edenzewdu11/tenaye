@@ -168,15 +168,24 @@ function MainApp() {
               <small>{me ? `Selam, ${me.first_name || 'friend'}` : 'Wellness companion'}</small>
             </div>
           )}
-          <button
-            className="sidebar-collapse-btn"
-            onClick={() => !isMobile() && setCollapsed(c => !c)}
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-              <path d={collapsed ? 'M5 2l5 5-5 5' : 'M9 2L4 7l5 5'} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
+          <div className="sidebar-actions">
+            <button
+              className="theme-toggle sidebar-theme-toggle"
+              onClick={toggleTheme}
+              title={theme === 'warm' ? 'Switch to dark mode' : 'Switch to light mode'}
+            >
+              <span className="theme-icon">{theme === 'warm' ? '🌙' : '☀️'}</span>
+            </button>
+            <button
+              className="sidebar-collapse-btn"
+              onClick={() => !isMobile() && setCollapsed(c => !c)}
+              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                <path d={collapsed ? 'M5 2l5 5-5 5' : 'M9 2L4 7l5 5'} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         {sections.map((s) => (
@@ -295,9 +304,6 @@ function MainApp() {
                 <div className="section-header">
                   <h3>Quick Actions</h3>
                   <div className="header-accent"></div>
-                  <button className="theme-toggle" onClick={() => toggleTheme()}>
-                    <span className="theme-icon">{theme === 'warm' ? '🌙' : '☀️'}</span>
-                  </button>
                 </div>
                 <div className="home-quick-grid enhanced">
                   <button className="quick-tile enhanced chat-tile" onClick={() => setTab('chat')}>
