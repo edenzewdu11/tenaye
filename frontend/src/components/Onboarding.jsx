@@ -49,7 +49,7 @@ export default function Onboarding({ onComplete, companion }) {
       <div className="onboarding-container">
         <div className="onboarding-step" key={step}>
           <div className="onboarding-companion-area">
-            <Companion mood={current.mood} size="lg" showName={false} showStatus={false} companion={companion} />
+            <Companion mood={current.mood} size="md" showName={false} showStatus={false} companion={companion} />
           </div>
 
           <h1 className="onboarding-title">{current.title}</h1>
