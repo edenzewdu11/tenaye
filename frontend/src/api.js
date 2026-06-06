@@ -39,6 +39,8 @@ export const api = {
   addCheckin: (mood, note = '') => req('/checkins/', { method: 'POST', json: { mood, note } }),
   dashboard: () => req('/dashboard/'),
   journals: () => req('/journals/'),
+  getRecommendations: () => req('/recommendations/'),
+  exploreQuery: (query) => req('/explore/', { method: 'POST', json: { query } }),
   uploadVoice: async (blob, mime = 'audio/webm') => {
     const fd = new FormData()
     fd.append('audio', blob, `voice.${mime.split('/')[1] || 'webm'}`)

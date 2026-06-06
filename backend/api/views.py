@@ -7,15 +7,66 @@ from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 
-from .models import CheckIn, ChatMessage, JournalEntry
+import json
+import logging
+from .models import CheckIn, ChatMessage, JournalEntry, LocationRecommendation
 from .serializers import (
     CheckInSerializer,
     ChatMessageSerializer,
     JournalEntrySerializer,
     TgUserSerializer,
+    LocationRecommendationSerializer,
 )
 from .crisis import is_crisis, CRISIS_RESPONSE
-from .gemini import chat_reply, transcribe_and_analyze
+from .gemini import chat_reply, transcribe_and_analyze, explore_places
+
+logger = logging.getLogger(__name__)
+
+
+def parse_and_save_recommendations(user, text):
+    """
+    Looks for the [RECOMMENDATIONS] block in the reply.
+    Saves recommendations to the database.
+    Returns:
+        clean_text (str): The text without the [RECOMMENDATIONS] block.
+        has_new (bool): Whether new recommendations were saved.
+    """
+    if "[RECOMMENDATIONS]" not in text:
+        return text, False
+
+    parts = text.split("[RECOMMENDATIONS]")
+    clean_text = parts[0].strip()
+    recs_json_str = parts[1].strip()
+
+    # Strip markdown block ticks if the model wrapped it
+    if recs_json_str.startswith("```"):
+        recs_json_str = recs_json_str.strip("`")
+        if recs_json_str.lower().startswith("json"):
+            recs_json_str = recs_json_str[4:].strip()
+
+    has_new = False
+    try:
+        recs = json.loads(recs_json_str)
+        if isinstance(recs, list):
+            for r in recs:
+                name = r.get("name")
+                if name:
+                    obj, created = LocationRecommendation.objects.update_or_create(
+                        user=user,
+                        name=name,
+                        defaults={
+                            "category": r.get("category", "Place"),
+                            "description": r.get("description", ""),
+                            "reason": r.get("reason", ""),
+                        }
+                    )
+                    if created:
+                        has_new = True
+    except Exception as e:
+        logger.exception("Failed to parse recommendations JSON: %s", e)
+
+    return clean_text, has_new
+
 
 
 @api_view(["GET"])
@@ -70,9 +121,14 @@ def chat(request):
             "resources": CRISIS_RESPONSE["resources"],
         })
 
-    ChatMessage.objects.create(user=user, role="assistant", content=reply, source='web')
+    clean_reply, has_new_recs = parse_and_save_recommendations(user, reply)
+    ChatMessage.objects.create(user=user, role="assistant", content=clean_reply, source='web')
 
-    return Response({"crisis": False, "reply": reply})
+    return Response({
+        "crisis": False,
+        "reply": clean_reply,
+        "has_new_recommendations": has_new_recs,
+    })
 
 
 # -------- Check-ins --------
@@ -167,14 +223,18 @@ def voice_journal(request):
         })
 
     reply = data.get("reply", "")
+    clean_reply = reply
+    has_new_recs = False
     ChatMessage.objects.create(user=user, role="user", content=transcript, is_voice=True, source='web')
     if reply:
-        ChatMessage.objects.create(user=user, role="assistant", content=reply, source='web')
+        clean_reply, has_new_recs = parse_and_save_recommendations(user, reply)
+        ChatMessage.objects.create(user=user, role="assistant", content=clean_reply, source='web')
 
     return Response({
         "entry": JournalEntrySerializer(entry).data,
-        "reply": reply,
+        "reply": clean_reply,
         "crisis": False,
+        "has_new_recommendations": has_new_recs,
     })
 
 
@@ -182,3 +242,21 @@ def voice_journal(request):
 def journals(request):
     qs = JournalEntry.objects.filter(user=request.user)[:60]
     return Response(JournalEntrySerializer(qs, many=True).data)
+
+
+
+@api_view(["GET"])
+def recommendations(request):
+    qs = LocationRecommendation.objects.filter(user=request.user)
+    return Response(LocationRecommendationSerializer(qs, many=True).data)
+
+
+@api_view(["POST"])
+@parser_classes([JSONParser])
+def explore(request):
+    """Given a user's mood/interest query, return AI-suggested nearby places."""
+    query = (request.data.get("query") or "").strip()
+    if not query:
+        return Response({"error": "query required"}, status=400)
+    data = explore_places(query)
+    return Response(data)

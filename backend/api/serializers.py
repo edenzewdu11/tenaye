@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CheckIn, ChatMessage, JournalEntry, TgUser
+from .models import CheckIn, ChatMessage, JournalEntry, TgUser, LocationRecommendation
 
 
 class TgUserSerializer(serializers.ModelSerializer):
@@ -27,3 +27,11 @@ class JournalEntrySerializer(serializers.ModelSerializer):
         model = JournalEntry
         fields = ["id", "transcript", "sentiment", "summary", "created_at"]
         read_only_fields = fields
+
+
+class LocationRecommendationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LocationRecommendation
+        fields = ["id", "name", "category", "description", "reason", "created_at"]
+        read_only_fields = fields
+

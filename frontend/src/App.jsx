@@ -7,6 +7,7 @@ import Companion from './components/Companion'
 import Onboarding from './components/Onboarding'
 import Customize from './components/Customize'
 import QRCode from './components/QRCode'
+import Explore from './components/Explore'
 import { api } from './api'
 import CrisisModal from './components/CrisisModal'
 import PitchBadge from './components/PitchBadge'
@@ -15,6 +16,7 @@ const NAV = [
   { key: 'home', label: 'Home', ico: '🏡', section: 'Wellness' },
   { key: 'chat', label: 'Chat', ico: '💬', section: 'Wellness' },
   { key: 'voice', label: 'Voice Journal', ico: '🎙️', section: 'Wellness' },
+  { key: 'explore', label: 'Explore Places', ico: '🗺️', section: 'Wellness' },
   { key: 'qr', label: 'Share Bot', ico: '📱', section: 'Share' },
   { key: 'customize', label: 'My Companion', ico: '🎨', section: 'Companion' },
   { key: 'stats', label: 'Progress', ico: '📊', section: 'Insights' },
@@ -69,6 +71,14 @@ const PAGES = {
     heroBody: 'Even showing up on a hard day is a win. Yene gobez, you showed up.',
     heroIcon: '📈',
   },
+  explore: {
+    title: 'Explore',
+    accent: 'Places',
+    sub: 'Tell Tena what you feel like doing — and discover where to go.',
+    heroTitle: 'Your city, your vibe',
+    heroBody: 'Parks, cafes, cinemas, game zones — Tena knows Addis. Just say what you\'re in the mood for.',
+    heroIcon: '🗺️',
+  },
 }
 
 export default function App() {
@@ -93,11 +103,18 @@ export default function App() {
   })
 
   const [activeCrisis, setActiveCrisis] = useState(null)
+  const [recommendations, setRecommendations] = useState([])
 
+  const fetchRecommendations = useCallback(() => {
+    api.getRecommendations()
+      .then(setRecommendations)
+      .catch((e) => console.error("Failed to fetch recommendations:", e))
+  }, [])
 
   useEffect(() => {
     api.me().then(setMe).catch((e) => setErr(e.message))
-  }, [])
+    fetchRecommendations()
+  }, [fetchRecommendations])
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme === 'night' ? 'night' : '')
@@ -247,10 +264,10 @@ export default function App() {
                 <div className="quick-title">My Progress</div>
                 <div className="quick-sub">Last 7 days at a glance</div>
               </button>
-              <button className="quick-tile q-coffee" onClick={() => setTab('qr')}>
-                <div className="quick-ico">📱</div>
-                <div className="quick-title">Share Bot</div>
-                <div className="quick-sub">Invite a friend</div>
+              <button className="quick-tile q-coffee" onClick={() => setTab('explore')}>
+                <div className="quick-ico">🗺️</div>
+                <div className="quick-title">Explore Places</div>
+                <div className="quick-sub">Find your next outing</div>
               </button>
             </div>
 
@@ -272,8 +289,9 @@ export default function App() {
             </div>
           </div>
         )}
-        {tab === 'chat' && <Chat companion={companion} onMoodChange={setChatMood} onCrisis={setActiveCrisis} />}
-        {tab === 'voice' && <VoiceJournal onCrisis={setActiveCrisis} />}
+        {tab === 'chat' && <Chat companion={companion} onMoodChange={setChatMood} onCrisis={setActiveCrisis} onRecommendationsUpdated={fetchRecommendations} />}
+        {tab === 'voice' && <VoiceJournal onCrisis={setActiveCrisis} onRecommendationsUpdated={fetchRecommendations} />}
+        {tab === 'explore' && <Explore />}
         {tab === 'qr' && <QRCode />}
         {tab === 'customize' && <Customize companion={companion} onUpdate={handleCompanionUpdate} />}
         {tab === 'stats' && <Dashboard refreshKey={dashRefreshKey} />}
@@ -285,3 +303,4 @@ export default function App() {
     </div>
   )
 }
+
