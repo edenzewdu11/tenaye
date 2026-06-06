@@ -146,7 +146,7 @@ export default function Onboarding({ onComplete, companion }) {
               onClick={next}
               disabled={isInterestsStep && selected.length === 0}
             >
-              {isFinalStep ? 'Start my journey' : 'Continue'}
+              {isFinalStep ? 'Get Started' : 'Continue'}
             </button>
             {!isFinalStep && (
               <button

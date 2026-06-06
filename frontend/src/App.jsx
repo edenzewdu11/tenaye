@@ -282,12 +282,31 @@ function MainApp() {
   )
 }
 
+function OnboardingPage() {
+  const navigate = useNavigate()
+  const [companion, setCompanion] = useState(() => {
+    try {
+      const saved = localStorage.getItem('tena-companion')
+      return saved ? JSON.parse(saved) : { gender: 'gentle', ageGroup: 'adult', style: 'modern', skinTone: 'warm' }
+    } catch {
+      return { gender: 'gentle', ageGroup: 'adult', style: 'modern', skinTone: 'warm' }
+    }
+  })
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('tena-onboarded', 'true')
+    navigate('/login')
+  }
+
+  return <Onboarding onComplete={handleOnboardingComplete} companion={companion} />
+}
+
 export default function App() {
   return (
     <Router>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<OnboardingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/welcome" element={<Welcome />} />
