@@ -9,6 +9,9 @@ urlpatterns = [
     path("auth/logout/", auth_views.logout),
     path("auth/profile/", auth_views.profile),
     
+    # Telegram webhook
+    path("telegram-webhook/", views.telegram_webhook, name="telegram_webhook"),
+    
     # Existing endpoints
     path("me/", views.me),
     path("chat/", views.chat),

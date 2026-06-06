@@ -24,6 +24,93 @@ from .gemini import chat_reply, transcribe_and_analyze, explore_places
 logger = logging.getLogger(__name__)
 
 
+@api_view(['POST'])
+@permission_classes([])
+def telegram_webhook(request):
+    """
+    Handle Telegram bot webhook updates
+    """
+    try:
+        import json
+        from django.http import JsonResponse
+        from django.views.decorators.csrf import csrf_exempt
+        from django.views.decorators.http import require_http_methods
+        
+        # Get update data from Telegram
+        update_data = request.data
+        
+        # Log the update for debugging
+        logger.info(f"Received Telegram update: {update_data}")
+        
+        # Handle different types of updates
+        if 'message' in update_data:
+            message = update_data['message']
+            chat_id = message['chat']['id']
+            
+            # Handle /start command
+            if message.get('text') == '/start':
+                from telegram import Bot
+                bot = Bot(token='8219870105:AAHGiy0tMyrAD16iK_Va3jKwekznzAV43bw')
+                
+                # Send welcome message
+                welcome_text = (
+                    "ሰላም 👋 I'm *Tena* — your wellness companion.\n\n"
+                    "• Tap *Open Tena* for the full app (chat, voice journal, dashboard).\n"
+                    "• Tap *Open in browser* to use the website version.\n"
+                    "• Use /check anytime for a quick mood check-in.\n"
+                    "• Use /week to see your last 7 days."
+                )
+                
+                bot.send_message(chat_id=chat_id, text=welcome_text, parse_mode='Markdown')
+                
+                # Send check-in prompt
+                bot.send_message(
+                    chat_id=chat_id, 
+                    text="How is your energy today?",
+                    reply_markup={
+                        'inline_keyboard': [
+                            [
+                                {'text': '🟢 Good', 'callback_data': 'ci:good'},
+                                {'text': '🟡 Surviving', 'callback_data': 'ci:surviving'},
+                                {'text': '🔴 Burned Out', 'callback_data': 'ci:burned'}
+                            ],
+                            [
+                                {'text': '📊 Show my week', 'callback_data': 'show:week'}
+                            ]
+                        ]
+                    }
+                )
+        
+        elif 'callback_query' in update_data:
+            # Handle button clicks
+            callback_query = update_data['callback_query']
+            chat_id = callback_query['message']['chat']['id']
+            callback_data = callback_query['data']
+            
+            from telegram import Bot
+            bot = Bot(token='8219870105:AAHGiy0tMyrAD16iK_Va3jKwekznzAV43bw')
+            
+            if callback_data.startswith('ci:'):
+                mood = callback_data.split(':')[1]
+                mood_messages = {
+                    'good': "Love that 🟢. Hold onto whatever's working today.",
+                    'surviving': "🟡 Surviving counts. Be gentle with yourself today.",
+                    'burned': "🔴 Heard. Open Tena and let's talk for a minute."
+                }
+                
+                bot.edit_message_text(
+                    chat_id=chat_id,
+                    message_id=callback_query['message']['message_id'],
+                    text=mood_messages.get(mood, "Thanks for checking in!")
+                )
+        
+        return Response({'status': 'ok'}, status=200)
+        
+    except Exception as e:
+        logger.error(f"Error in telegram webhook: {str(e)}")
+        return Response({'status': 'error', 'message': str(e)}, status=500)
+
+
 def parse_and_save_recommendations(user, text):
     """
     Looks for the [RECOMMENDATIONS] block in the reply.
