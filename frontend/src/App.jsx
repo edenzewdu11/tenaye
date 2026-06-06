@@ -76,6 +76,7 @@ export default function App() {
   const [err, setErr] = useState(null)
   const [open, setOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const isMobile = () => window.innerWidth <= 820
 
   const [onboarding, setOnboarding] = useState(() => !localStorage.getItem('tena-onboarded'))
   const [theme, setTheme] = useState(() => localStorage.getItem('tena-theme') || 'warm')
@@ -135,26 +136,27 @@ export default function App() {
           )}
           <button
             className="sidebar-collapse-btn"
-            onClick={() => setCollapsed(c => !c)}
+            onClick={() => !isMobile() && setCollapsed(c => !c)}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d={collapsed ? 'M5 2l5 5-5 5' : 'M9 2L4 7l5 5'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+              <path d={collapsed ? 'M5 2l5 5-5 5' : 'M9 2L4 7l5 5'} stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
         </div>
 
         {sections.map((s) => (
           <div key={s}>
-            <div className="nav-section-label">{s}</div>
+            <div className="nav-section-label">{collapsed ? '' : s}</div>
             {NAV.filter((n) => n.section === s).map((n) => (
               <button
                 key={n.key}
                 className={`nav-item ${tab === n.key ? 'active' : ''}`}
                 onClick={() => { setTab(n.key); setOpen(false) }}
+                title={collapsed ? n.label : ''}
               >
                 <span className="ico">{n.ico}</span>
-                {n.label}
+                {!collapsed && <span className="nav-label">{n.label}</span>}
               </button>
             ))}
           </div>
