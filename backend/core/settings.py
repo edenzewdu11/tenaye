@@ -100,5 +100,5 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_BOT_USERNAME = os.getenv("TELEGRAM_BOT_USERNAME", "")
 MINI_APP_URL = os.getenv("MINI_APP_URL", "http://localhost:5173")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-# Dev escape hatch: allow x-telegram-id header without HMAC verification when DEBUG
-ALLOW_DEV_AUTH = DEBUG
+# Allow X-Telegram-Id header for web app users (always on for now)
+ALLOW_DEV_AUTH = os.getenv("ALLOW_DEV_AUTH", "true").lower() == "true"
