@@ -10,3 +10,6 @@ python-telegram-bot[job-queue]==21.7
 requests==2.32.3
 gunicorn==22.0.0
 whitenoise==6.7.0
+PyJWT==2.9.0
+djangorestframework-simplejwt==5.4.0
+setuptools>=75.0.0

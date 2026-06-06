@@ -3,9 +3,10 @@ from collections import OrderedDict
 
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.decorators import api_view, parser_classes
+from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
+from .permissions import IsWebOrAuthenticated
 
 import json
 import logging
@@ -69,16 +70,27 @@ def parse_and_save_recommendations(user, text):
 
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
+@permission_classes([IsWebOrAuthenticated])
 def me(request):
-    return Response(TgUserSerializer(request.user).data)
+    from .user_utils import get_web_user
+    
+    user = get_web_user(request)
+    
+    if request.method == 'POST':
+        return Response(TgUserSerializer(user).data)
+    
+    return Response(TgUserSerializer(user).data)
 
 
 # -------- Chat --------
 @api_view(["GET", "POST"])
 @parser_classes([JSONParser])
+@permission_classes([IsWebOrAuthenticated])
 def chat(request):
-    user = request.user
+    from .user_utils import get_web_user
+    
+    user = get_web_user(request)
     if request.method == "GET":
         msgs = ChatMessage.objects.filter(user=user, source='web')[:200]
         return Response(ChatMessageSerializer(msgs, many=True).data)
@@ -134,6 +146,7 @@ def chat(request):
 # -------- Check-ins --------
 @api_view(["GET", "POST"])
 @parser_classes([JSONParser])
+@permission_classes([IsWebOrAuthenticated])
 def checkins(request):
     user = request.user
     if request.method == "POST":
@@ -150,6 +163,7 @@ def checkins(request):
 
 # -------- Weekly dashboard --------
 @api_view(["GET"])
+@permission_classes([IsWebOrAuthenticated])
 def dashboard(request):
     user = request.user
     today = timezone.localdate()
@@ -191,6 +205,7 @@ def dashboard(request):
 # -------- Voice journal --------
 @api_view(["POST"])
 @parser_classes([MultiPartParser, FormParser])
+@permission_classes([IsWebOrAuthenticated])
 def voice_journal(request):
     user = request.user
     audio = request.FILES.get("audio")

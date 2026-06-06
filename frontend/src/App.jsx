@@ -1,13 +1,19 @@
 import { useEffect, useState, useCallback } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Chat from './components/Chat'
 import VoiceJournal from './components/VoiceJournal'
 import Dashboard from './components/Dashboard'
 import CheckIn from './components/CheckIn'
+import Home from './components/Home'
 import Companion from './components/Companion'
 import Onboarding from './components/Onboarding'
 import Customize from './components/Customize'
 import QRCode from './components/QRCode'
 import Explore from './components/Explore'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Welcome from './pages/Welcome'
 import { api } from './api'
 import CrisisModal from './components/CrisisModal'
 import PitchBadge from './components/PitchBadge'
@@ -50,26 +56,26 @@ const PAGES = {
   qr: {
     title: 'Share',
     accent: 'Tena Bot',
-    sub: 'Invite friends to chat with Tena on Telegram.',
-    heroTitle: 'Share the wellness',
-    heroBody: 'Scan this QR code or share the link to help others discover Tena.',
+    sub: 'Share the wellness companion with friends and family.',
+    heroTitle: 'Spread wellness',
+    heroBody: 'Help others discover their path to mental well-being.',
     heroIcon: '📱',
   },
   customize: {
     title: 'My',
     accent: 'Companion',
-    sub: 'Make Tena feel like home.',
-    heroTitle: 'Your companion, your way',
-    heroBody: 'Choose how Tena looks and feels. Every detail matters.',
-    heroIcon: '✨',
+    sub: 'Personalize your wellness companion.',
+    heroTitle: 'Make it yours',
+    heroBody: 'Choose the look, feel, and personality that resonates with you.',
+    heroIcon: '🎨',
   },
   stats: {
-    title: 'My',
+    title: 'Your',
     accent: 'Progress',
-    sub: 'Patterns over the last 7 days. No judgment — just clarity.',
-    heroTitle: 'Small streaks > big resolutions',
-    heroBody: 'Even showing up on a hard day is a win. Yene gobez, you showed up.',
-    heroIcon: '📈',
+    sub: 'Track your wellness journey over time.',
+    heroTitle: 'See how far you\'ve come',
+    heroBody: 'Every check-in, every conversation, every step forward matters.',
+    heroIcon: '📊',
   },
   explore: {
     title: 'Explore',
@@ -81,26 +87,35 @@ const PAGES = {
   },
 }
 
-export default function App() {
+function ProtectedRoute({ children }) {
+  const { isAuthenticated, loading } = useAuth()
+  
+  if (loading) {
+    return (
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <div className="logo">ጤ</div>
+            <h1>Loading...</h1>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  
+  return isAuthenticated ? children : <Navigate to="/login" />
+}
+
+function MainApp() {
   const [tab, setTab] = useState('home')
   const [me, setMe] = useState(null)
-  const [err, setErr] = useState(null)
-  const [open, setOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
-  const isMobile = () => window.innerWidth <= 820
-
-  const [onboarding, setOnboarding] = useState(() => !localStorage.getItem('tena-onboarded'))
+  const [open, setOpen] = useState(false)
+  const [crisis, setCrisis] = useState(null)
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const [theme, setTheme] = useState(() => localStorage.getItem('tena-theme') || 'warm')
-  const [chatMood, setChatMood] = useState('idle')
-  const [dashRefreshKey, setDashRefreshKey] = useState(0)
-  const [companion, setCompanion] = useState(() => {
-    try {
-      const saved = localStorage.getItem('tena-companion')
-      return saved ? JSON.parse(saved) : { gender: 'gentle', ageGroup: 'adult', style: 'modern', skinTone: 'warm' }
-    } catch {
-      return { gender: 'gentle', ageGroup: 'adult', style: 'modern', skinTone: 'warm' }
-    }
-  })
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
 
   const [activeCrisis, setActiveCrisis] = useState(null)
   const [recommendations, setRecommendations] = useState([])
@@ -115,33 +130,52 @@ export default function App() {
     api.me().then(setMe).catch((e) => setErr(e.message))
     fetchRecommendations()
   }, [fetchRecommendations])
+  const isMobile = () => window.innerWidth < 820
+
+  useEffect(() => {
+    if (user) {
+      setMe(user)
+    }
+  }, [user])
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 820) setOpen(false)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme === 'night' ? 'night' : '')
     localStorage.setItem('tena-theme', theme)
   }, [theme])
 
-  const handleOnboardingComplete = useCallback(() => {
-    localStorage.setItem('tena-onboarded', 'true')
-    setOnboarding(false)
-  }, [])
-
-  const handleCompanionUpdate = useCallback((updates) => {
-    const updated = { ...companion, ...updates }
-    setCompanion(updated)
-    localStorage.setItem('tena-companion', JSON.stringify(updated))
-  }, [companion])
-
-  const handleCheckinLogged = useCallback(() => {
-    setDashRefreshKey(k => k + 1)
-  }, [])
-
-  const sections = [...new Set(NAV.map((n) => n.section))]
-  const page = PAGES[tab]
-
-  if (onboarding) {
-    return <Onboarding onComplete={handleOnboardingComplete} companion={companion} />
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'warm' ? 'night' : 'warm')
   }
+
+  const fetchMe = useCallback(async () => {
+    try {
+      const data = await api.me()
+      setMe(data)
+    } catch (e) {
+      console.error('Failed to fetch user:', e)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (user) {
+      fetchMe()
+    }
+  }, [user, fetchMe])
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
+
+  const sections = [...new Set(NAV.map(n => n.section))]
 
   return (
     <div className="layout">
@@ -194,59 +228,90 @@ export default function App() {
       <main className="main">
         <div className="page-header">
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <button className="menu-btn" onClick={() => setOpen(true)}>☰</button>
-              <h1 className="page-title">
-                {page.title} <span className="accent">{page.accent}</span>
-              </h1>
-            </div>
-            <div className="page-sub" style={{ marginLeft: 54 }}>{page.sub}</div>
+            <h2>{PAGES[tab]?.title}</h2>
+            <h3>{PAGES[tab]?.accent}</h3>
+            <p>{PAGES[tab]?.sub}</p>
           </div>
-          <button
-            className="theme-toggle"
-            onClick={() => setTheme(t => t === 'warm' ? 'night' : 'warm')}
-            title="Toggle theme"
-          >
-            {theme === 'warm' ? '🌙' : '☀️'}
-          </button>
+          <div className="page-actions">
+            {isMobile() && (
+              <button className="menu-btn" onClick={() => setOpen(true)}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            )}
+            <button className="logout-btn" onClick={handleLogout} title="Sign out">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
-        {tab !== 'home' && (
-          <section className="hero">
-            <div className="hero-icon">{page.heroIcon}</div>
-            <h2>{page.heroTitle}</h2>
-            <p>{page.heroBody}</p>
-          </section>
-        )}
-
-        {err && (
-          <div className="toast-error">
-            <span>⚠️ {err} — Check the server is running on :8000 and your .env is configured.</span>
-            <button className="toast-close" onClick={() => setErr(null)}>×</button>
-          </div>
-        )}
-
-        {tab === 'home' && (
-          <div className="home-layout">
-            <div className="home-greeting">
-              <div className="home-greeting-text">
-                <span className="home-eyebrow">{(() => {
-                  const h = new Date().getHours()
-                  if (h < 12) return 'Selam — Good morning'
-                  if (h < 18) return 'Selam — Good afternoon'
-                  return 'Selam — Good evening'
-                })()}</span>
-                <h2>{me?.first_name ? `${me.first_name},` : 'Friend,'} <span className="accent">how is your heart today?</span></h2>
-                <p>Take a breath. I'm right here — log a mood, talk it out, or just sit with me a moment.</p>
-                <div className="home-cta-row">
-                  <button className="btn-primary" onClick={() => setTab('chat')}>💬 Start a chat</button>
-                  <button className="btn-ghost" onClick={() => setTab('voice')}>🎙️ Voice journal</button>
+        <div className="page-content">
+          {tab === 'home' && (
+            <div className="home-page">
+              {/* Enhanced Hero Section */}
+              <div className="home-hero">
+                <div className="hero-background">
+                  <div className="hero-pattern"></div>
+                  <div className="hero-gradient"></div>
+                </div>
+                <div className="home-greeting enhanced">
+                  <div className="greeting-content">
+                    <div className="greeting-badge">
+                      <span className="badge-icon">✨</span>
+                      <span className="badge-text">Welcome Back</span>
+                    </div>
+                    <h1>{PAGES[tab].heroTitle}</h1>
+                    <p>{PAGES[tab].heroBody}</p>
+                  </div>
+                  <div className="greeting-visual">
+                    <div className="character-orb">
+                      <img src="/images/normalimage.png" alt="Tena Companion" className="character-img" />
+                      <div className="orb-ring"></div>
+                      <div className="orb-particles">
+                        <span className="particle">✨</span>
+                        <span className="particle">💫</span>
+                        <span className="particle">⭐</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="home-greeting-art">
-                <Companion mood={chatMood} size="lg" companion={companion} showStatus={true} />
+              
+              {/* Enhanced Wisdom Section */}
+              <div className="home-wisdom enhanced">
+                <div className="wisdom-header">
+                  <div className="wisdom-badge">
+                    <span className="wisdom-icon">💡</span>
+                    <span className="wisdom-badge-text">Daily Wisdom</span>
+                  </div>
+                  <h3>Today's Insight</h3>
+                  <div className="wisdom-accent"></div>
+                </div>
+                <div className="wisdom-content">
+                  <div className="wisdom-visual">
+                    <div className="wisdom-orb">
+                      <div className="wisdom-character">
+                        <img src="/images/thinking.png" alt="Tena Thinking" className="wisdom-character-img" />
+                      </div>
+                      <div className="wisdom-particles">
+                        <span className="wisdom-particle">✨</span>
+                        <span className="wisdom-particle">💭</span>
+                        <span className="wisdom-particle">🌟</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="wisdom-text">
+                    <p>Take 3 deep breaths before responding to stressful situations. It gives you a moment to think and react more calmly. Your mind will thank you for the pause.</p>
+                    <div className="wisdom-author">
+                      <span className="author-icon">—</span>
+                      <span className="author-name">Tena Wisdom</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
 
             <div className="home-quick-grid">
               <button className="quick-tile q-gold" onClick={() => setTab('chat')}>
@@ -275,16 +340,94 @@ export default function App() {
               <div className="home-checkin-tip-row">
                 <div className="home-checkin-col">
                   <CheckIn onLogged={handleCheckinLogged} />
+              {/* Enhanced Quick Actions */}
+              <div className="home-quick enhanced">
+                <div className="section-header">
+                  <h3>Quick Actions</h3>
+                  <div className="header-accent"></div>
+                  <button className="theme-toggle" onClick={() => toggleTheme()}>
+                    <span className="theme-icon">{theme === 'warm' ? '🌙' : '☀️'}</span>
+                  </button>
                 </div>
-                <aside className="home-tip">
-                  <div className="home-tip-badge">Today's tip</div>
-                  <h3>The 5-4-3-2-1 reset</h3>
-                  <p>Feeling overwhelmed? Name <b>5</b> things you see, <b>4</b> you can touch, <b>3</b> you hear, <b>2</b> you smell, and <b>1</b> you taste. It tells your nervous system: <i>you are safe</i>.</p>
-                  <div className="home-tip-foot">— Tena · ጤና</div>
-                </aside>
+                <div className="home-quick-grid enhanced">
+                  <button className="quick-tile enhanced chat-tile" onClick={() => setTab('chat')}>
+                    <div className="tile-background"></div>
+                    <div className="tile-content">
+                      <div className="tile-icon-wrapper">
+                        <div className="tile-icon">💬</div>
+                        <div className="tile-glow"></div>
+                      </div>
+                      <h4>Chat with Tena</h4>
+                      <p>Talk about what's on your mind</p>
+                      <div className="tile-arrow">→</div>
+                    </div>
+                  </button>
+                  <button className="quick-tile enhanced voice-tile" onClick={() => setTab('voice')}>
+                    <div className="tile-background"></div>
+                    <div className="tile-content">
+                      <div className="tile-icon-wrapper">
+                        <div className="tile-icon">🎙️</div>
+                        <div className="tile-glow"></div>
+                      </div>
+                      <h4>Voice Journal</h4>
+                      <p>Speak your thoughts freely</p>
+                      <div className="tile-arrow">→</div>
+                    </div>
+                  </button>
+                  <button className="quick-tile enhanced stats-tile" onClick={() => setTab('stats')}>
+                    <div className="tile-background"></div>
+                    <div className="tile-content">
+                      <div className="tile-icon-wrapper">
+                        <div className="tile-icon">📊</div>
+                        <div className="tile-glow"></div>
+                      </div>
+                      <h4>Progress</h4>
+                      <p>See your wellness journey</p>
+                      <div className="tile-arrow">→</div>
+                    </div>
+                  </button>
+                  <button className="quick-tile enhanced customize-tile" onClick={() => setTab('customize')}>
+                    <div className="tile-background"></div>
+                    <div className="tile-content">
+                      <div className="tile-icon-wrapper">
+                        <div className="tile-icon">🎨</div>
+                        <div className="tile-glow"></div>
+                      </div>
+                      <h4>Customize</h4>
+                      <p>Personalize your companion</p>
+                      <div className="tile-arrow">→</div>
+                    </div>
+                  </button>
+                </div>
               </div>
-              <div className="home-dashboard-wide">
-                <Dashboard refreshKey={dashRefreshKey} />
+
+              {/* Enhanced Daily Check-in */}
+              <div className="home-checkin enhanced">
+                <div className="checkin-header enhanced">
+                  <div className="checkin-badge">
+                    <span className="checkin-badge-icon">🌟</span>
+                    <span className="checkin-badge-text">Daily Check-in</span>
+                  </div>
+                  <h3>How are you feeling today?</h3>
+                  <div className="checkin-accent"></div>
+                </div>
+                <div className="checkin-content">
+                  <div className="checkin-visual">
+                    <div className="checkin-orb">
+                      <div className="checkin-character">
+                        <img src="/images/listening.png" alt="Tena Listening" className="checkin-character-img" />
+                      </div>
+                      <div className="listening-waves">
+                        <div className="wave wave-1"></div>
+                        <div className="wave wave-2"></div>
+                        <div className="wave wave-3"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="checkin-form">
+                    <CheckIn me={me} setMe={setMe} onCrisis={setCrisis} />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -296,11 +439,52 @@ export default function App() {
         {tab === 'customize' && <Customize companion={companion} onUpdate={handleCompanionUpdate} />}
         {tab === 'stats' && <Dashboard refreshKey={dashRefreshKey} />}
 
+          )}
+          {tab === 'chat' && <Chat me={me} />}
+          {tab === 'voice' && <VoiceJournal me={me} />}
+          {tab === 'qr' && <QRCode />}
+          {tab === 'customize' && <Customize me={me} setMe={setMe} />}
+          {tab === 'stats' && <Dashboard me={me} />}
+        </div>
       </main>
 
-      <CrisisModal data={activeCrisis} onClose={() => setActiveCrisis(null)} />
-      <PitchBadge onTriggerDemo={() => setActiveCrisis({})} />
+      {crisis && <CrisisModal crisis={crisis} onClose={() => setCrisis(null)} />}
+      <PitchBadge />
     </div>
   )
 }
 
+function OnboardingPage() {
+  const navigate = useNavigate()
+  const [companion, setCompanion] = useState(() => {
+    try {
+      const saved = localStorage.getItem('tena-companion')
+      return saved ? JSON.parse(saved) : { gender: 'gentle', ageGroup: 'adult', style: 'modern', skinTone: 'warm' }
+    } catch {
+      return { gender: 'gentle', ageGroup: 'adult', style: 'modern', skinTone: 'warm' }
+    }
+  })
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('tena-onboarded', 'true')
+    navigate('/login')
+  }
+
+  return <Onboarding onComplete={handleOnboardingComplete} companion={companion} />
+}
+
+export default function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<OnboardingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/welcome" element={<Welcome />} />
+          <Route path="/app/*" element={<MainApp />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
+  )
+}
