@@ -13,7 +13,7 @@ export default function Welcome() {
   }, [user, navigate])
 
   const handleGetStarted = () => {
-    navigate('/dashboard')
+    navigate('/app')
   }
 
   const handleLogout = () => {

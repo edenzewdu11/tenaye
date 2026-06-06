@@ -236,10 +236,11 @@ export default function App() {
     <Router>
       <AuthProvider>
         <Routes>
+          <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/welcome" element={<ProtectedRoute><Welcome /></ProtectedRoute>} />
-          <Route path="/*" element={<ProtectedRoute><MainApp /></ProtectedRoute>} />
+          <Route path="/welcome" element={<Welcome />} />
+          <Route path="/app/*" element={<MainApp />} />
         </Routes>
       </AuthProvider>
     </Router>

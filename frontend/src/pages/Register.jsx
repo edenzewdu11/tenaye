@@ -152,7 +152,7 @@ export default function Register() {
             className="auth-button secondary"
             onClick={() => {
               continueAsGuest()
-              navigate('/')
+              navigate('/app')
             }}
           >
             Skip - Continue as Guest
