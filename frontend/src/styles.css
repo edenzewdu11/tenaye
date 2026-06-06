@@ -2100,7 +2100,7 @@ body::after {
   border: 1px solid var(--warm-border);
   padding: 40px;
   width: 100%;
-  max-width: 420px;
+  max-width: 500px;
   position: relative;
   z-index: 1;
 }
