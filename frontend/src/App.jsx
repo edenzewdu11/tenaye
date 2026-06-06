@@ -242,16 +242,6 @@ function MainApp() {
                     </div>
                     <h1>{PAGES[tab].heroTitle}</h1>
                     <p>{PAGES[tab].heroBody}</p>
-                    <div className="greeting-stats">
-                      <div className="stat-item">
-                        <span className="stat-number">7</span>
-                        <span className="stat-label">Day Streak</span>
-                      </div>
-                      <div className="stat-item">
-                        <span className="stat-number">92%</span>
-                        <span className="stat-label">Wellness Score</span>
-                      </div>
-                    </div>
                   </div>
                   <div className="greeting-visual">
                     <div className="character-orb">
