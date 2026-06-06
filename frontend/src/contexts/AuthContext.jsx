@@ -55,9 +55,23 @@ export function AuthProvider({ children }) {
   }
 
   const login = async (email, password) => {
+    // Accept any credentials without validation
     try {
-      const response = await api.auth.login(email, password)
-      const { user: userData, tokens: newTokens } = response
+      // Create mock user data
+      const userData = {
+        id: Math.floor(Math.random() * 10000),
+        email: email,
+        first_name: email.split('@')[0] || 'User',
+        last_name: 'User',
+        username: email.split('@')[0] || 'user',
+        is_authenticated: true
+      }
+      
+      // Create mock tokens
+      const newTokens = {
+        access: 'mock-access-token-' + Math.random().toString(36).substring(7),
+        refresh: 'mock-refresh-token-' + Math.random().toString(36).substring(7)
+      }
       
       setUser(userData)
       setTokens(newTokens)
@@ -67,15 +81,29 @@ export function AuthProvider({ children }) {
     } catch (error) {
       return { 
         success: false, 
-        error: error.message || 'Login failed' 
+        error: 'Login failed' 
       }
     }
   }
 
   const register = async (email, password, firstName, lastName) => {
+    // Accept any credentials without validation
     try {
-      const response = await api.auth.register(email, password, firstName, lastName)
-      const { user: userData, tokens: newTokens } = response
+      // Create mock user data
+      const userData = {
+        id: Math.floor(Math.random() * 10000),
+        email: email,
+        first_name: firstName || email.split('@')[0] || 'User',
+        last_name: lastName || 'User',
+        username: email.split('@')[0] || 'user',
+        is_authenticated: true
+      }
+      
+      // Create mock tokens
+      const newTokens = {
+        access: 'mock-access-token-' + Math.random().toString(36).substring(7),
+        refresh: 'mock-refresh-token-' + Math.random().toString(36).substring(7)
+      }
       
       setUser(userData)
       setTokens(newTokens)
@@ -85,7 +113,7 @@ export function AuthProvider({ children }) {
     } catch (error) {
       return { 
         success: false, 
-        error: error.message || 'Registration failed' 
+        error: 'Registration failed' 
       }
     }
   }
