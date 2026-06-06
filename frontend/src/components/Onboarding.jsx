@@ -22,7 +22,7 @@ const STEPS = [
   },
   {
     title: <>Ready to <span className="highlight">begin?</span></>,
-    body: 'Every conversation is a step toward wellbeing. ጤናህ ይጠብቅ። (May your health be preserved.) Let\'s start this journey together.',
+    body: 'Every conversation is a step toward wellbeing. ጤናህ ይጠበቅ። (May your health be preserved.) Let\'s start this journey together.',
     mood: 'empathetic',
     companion: {},
   },
