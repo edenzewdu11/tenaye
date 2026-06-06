@@ -257,6 +257,39 @@ function MainApp() {
                 </div>
               </div>
               
+              {/* Enhanced Wisdom Section */}
+              <div className="home-wisdom enhanced">
+                <div className="wisdom-header">
+                  <div className="wisdom-badge">
+                    <span className="wisdom-icon">💡</span>
+                    <span className="wisdom-badge-text">Daily Wisdom</span>
+                  </div>
+                  <h3>Today's Insight</h3>
+                  <div className="wisdom-accent"></div>
+                </div>
+                <div className="wisdom-content">
+                  <div className="wisdom-visual">
+                    <div className="wisdom-orb">
+                      <div className="wisdom-character">
+                        <img src="/images/thinking.png" alt="Tena Thinking" className="wisdom-character-img" />
+                      </div>
+                      <div className="wisdom-particles">
+                        <span className="wisdom-particle">✨</span>
+                        <span className="wisdom-particle">💭</span>
+                        <span className="wisdom-particle">🌟</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="wisdom-text">
+                    <p>Take 3 deep breaths before responding to stressful situations. It gives you a moment to think and react more calmly. Your mind will thank you for the pause.</p>
+                    <div className="wisdom-author">
+                      <span className="author-icon">—</span>
+                      <span className="author-name">Tena Wisdom</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Enhanced Quick Actions */}
               <div className="home-quick enhanced">
                 <div className="section-header">
@@ -318,45 +351,31 @@ function MainApp() {
                 </div>
               </div>
 
-              {/* Enhanced Check-in and Tip Section */}
-              <div className="home-content-row">
-                <div className="enhanced-checkin">
-                  <div className="checkin-header">
-                    <div className="checkin-icon-wrapper">
-                      <div className="checkin-icon">🌟</div>
-                      <div className="icon-pulse"></div>
-                    </div>
-                    <div className="checkin-title">
-                      <h3>Daily Check-in</h3>
-                      <p>How are you feeling today?</p>
-                    </div>
+              {/* Enhanced Daily Check-in */}
+              <div className="home-checkin enhanced">
+                <div className="checkin-header enhanced">
+                  <div className="checkin-badge">
+                    <span className="checkin-badge-icon">🌟</span>
+                    <span className="checkin-badge-text">Daily Check-in</span>
                   </div>
-                  <CheckIn me={me} setMe={setMe} onCrisis={setCrisis} />
+                  <h3>How are you feeling today?</h3>
+                  <div className="checkin-accent"></div>
                 </div>
-                
-                <div className="enhanced-tip">
-                  <div className="tip-header">
-                    <div className="tip-icon-wrapper">
-                      <div className="tip-icon">💡</div>
-                      <div className="tip-glow"></div>
-                    </div>
-                    <div className="tip-title">
-                      <h3>Today's Wisdom</h3>
-                      <p>Your daily dose of inspiration</p>
+                <div className="checkin-content">
+                  <div className="checkin-visual">
+                    <div className="checkin-orb">
+                      <div className="checkin-character">
+                        <img src="/images/listening.png" alt="Tena Listening" className="checkin-character-img" />
+                      </div>
+                      <div className="listening-waves">
+                        <div className="wave wave-1"></div>
+                        <div className="wave wave-2"></div>
+                        <div className="wave wave-3"></div>
+                      </div>
                     </div>
                   </div>
-                  <div className="tip-content">
-                    <p>Take 3 deep breaths before responding to stressful situations. It gives you a moment to think and react more calmly. Your mind will thank you.</p>
-                    <div className="tip-actions">
-                      <button className="tip-action-btn">
-                        <span>💭</span>
-                        Reflect
-                      </button>
-                      <button className="tip-action-btn">
-                        <span>📝</span>
-                        Note
-                      </button>
-                    </div>
+                  <div className="checkin-form">
+                    <CheckIn me={me} setMe={setMe} onCrisis={setCrisis} />
                   </div>
                 </div>
               </div>
