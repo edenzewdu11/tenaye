@@ -145,6 +145,7 @@ body::after {
   position: sticky; top: 0;
   height: 100dvh;
   z-index: 5;
+  transition: width var(--transition), flex-basis var(--transition), padding var(--transition);
 }
 
 .sidebar-brand {
@@ -152,31 +153,74 @@ body::after {
   padding: 4px 8px 20px;
   border-bottom: 1px solid var(--warm-border);
   margin-bottom: 12px;
-}
-.sidebar-brand .logo {
-  width: 46px; height: 46px; border-radius: 14px;
-  background: linear-gradient(135deg, var(--gold), var(--terracotta));
-  display: grid; place-items: center;
-  font-weight: 800; color: #fff; font-size: 20px;
-  font-family: 'Noto Sans Ethiopic', serif;
-  box-shadow: var(--shadow-gold);
   position: relative;
 }
+.sidebar-brand .logo {
+  flex: 0 0 40px;
+  width: 40px; height: 40px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  display: grid; place-items: center;
+  font-weight: 800; color: #fff; font-size: 18px;
+  font-family: 'Noto Sans Ethiopic', serif;
+  box-shadow: 0 4px 14px rgba(212, 160, 23, 0.35);
+  position: relative;
+  letter-spacing: 0;
+}
 .sidebar-brand .logo::after {
-  content: ''; position: absolute; inset: -4px; border-radius: 18px;
-  background: linear-gradient(135deg, rgba(212, 160, 23, 0.45), transparent 70%);
-  z-index: -1; filter: blur(10px);
+  content: ''; position: absolute; inset: -3px; border-radius: 15px;
+  background: linear-gradient(135deg, rgba(212, 160, 23, 0.3), transparent 70%);
+  z-index: -1; filter: blur(8px);
 }
 .sidebar-brand h1 {
-  font-size: 20px; margin: 0; letter-spacing: -.4px; font-weight: 800;
+  font-size: 18px; margin: 0; letter-spacing: -.3px; font-weight: 800;
   background: linear-gradient(135deg, var(--coffee), var(--terracotta));
   -webkit-background-clip: text; background-clip: text; color: transparent;
   font-family: 'Playfair Display', serif;
+  white-space: nowrap;
 }
 .sidebar-brand small {
-  color: var(--warm-muted); font-weight: 500; font-size: 12px;
-  display: block; margin-top: 2px;
+  color: var(--warm-muted); font-weight: 500; font-size: 11px;
+  display: block; margin-top: 1px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
 }
+.sidebar-brand-text { flex: 1; min-width: 0; overflow: hidden; }
+
+.sidebar-collapse-btn {
+  flex: 0 0 26px;
+  width: 26px; height: 26px;
+  border-radius: 8px;
+  border: 1px solid var(--warm-border);
+  background: var(--warm-panel);
+  color: var(--warm-muted);
+  font-size: 14px; line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition);
+  padding: 0;
+}
+.sidebar-collapse-btn:hover {
+  background: var(--gold-light);
+  border-color: var(--gold);
+  color: var(--coffee);
+}
+
+.sidebar.collapsed {
+  width: 68px;
+  flex: 0 0 68px;
+  padding: 24px 10px;
+}
+.sidebar.collapsed .nav-section-label { opacity: 0; height: 0; padding: 0; margin: 0; }
+.sidebar.collapsed .sidebar-footer { display: none; }
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 11px;
+  gap: 0;
+  font-size: 0;
+}
+.sidebar.collapsed .nav-item .ico { font-size: 20px; width: auto; }
+.sidebar.collapsed .sidebar-collapse-btn { margin-left: 0; }
+.sidebar.collapsed .sidebar-brand { justify-content: space-between; padding-bottom: 20px; gap: 0; }
+.sidebar.collapsed .sidebar-brand .logo { flex: 0 0 40px; }
 
 .nav-section-label {
   font-size: 10px; color: var(--warm-muted); font-weight: 700;

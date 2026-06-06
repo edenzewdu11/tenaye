@@ -75,6 +75,7 @@ export default function App() {
   const [me, setMe] = useState(null)
   const [err, setErr] = useState(null)
   const [open, setOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
 
   const [onboarding, setOnboarding] = useState(() => !localStorage.getItem('tena-onboarded'))
   const [theme, setTheme] = useState(() => localStorage.getItem('tena-theme') || 'warm')
@@ -123,13 +124,24 @@ export default function App() {
       <div className="ethio-textile-bg" />
       <div className={`scrim ${open ? 'show' : ''}`} onClick={() => setOpen(false)} />
 
-      <aside className={`sidebar ${open ? 'open' : ''}`}>
+      <aside className={`sidebar ${open ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-brand">
           <div className="logo">ጤ</div>
-          <div>
-            <h1>Tena</h1>
-            <small>{me ? `Selam, ${me.first_name || 'friend'}` : 'Wellness companion'}</small>
-          </div>
+          {!collapsed && (
+            <div className="sidebar-brand-text">
+              <h1>Tena</h1>
+              <small>{me ? `Selam, ${me.first_name || 'friend'}` : 'Wellness companion'}</small>
+            </div>
+          )}
+          <button
+            className="sidebar-collapse-btn"
+            onClick={() => setCollapsed(c => !c)}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d={collapsed ? 'M5 2l5 5-5 5' : 'M9 2L4 7l5 5'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
         </div>
 
         {sections.map((s) => (
