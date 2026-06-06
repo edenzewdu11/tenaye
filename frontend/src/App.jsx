@@ -25,7 +25,7 @@ const PAGES = {
     accent: 'to Tena',
     sub: 'Your companion is here. How are you feeling today?',
     heroTitle: 'Selam! I\'ve been waiting for you',
-    heroBody: 'Take a breath. Share what\'s on your mind, log a mood, or just say hi. ጤናህ ይጠብቅ።',
+    heroBody: 'Take a breath. Share what\'s on your mind, log a mood, or just say hi. ጤናህ ይጠበቅ።',
     heroIcon: '🌅',
   },
   chat: {
@@ -75,6 +75,7 @@ export default function App() {
   const [me, setMe] = useState(null)
   const [err, setErr] = useState(null)
   const [open, setOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
 
   const [onboarding, setOnboarding] = useState(() => !localStorage.getItem('tena-onboarded'))
   const [theme, setTheme] = useState(() => localStorage.getItem('tena-theme') || 'warm')
@@ -123,13 +124,24 @@ export default function App() {
       <div className="ethio-textile-bg" />
       <div className={`scrim ${open ? 'show' : ''}`} onClick={() => setOpen(false)} />
 
-      <aside className={`sidebar ${open ? 'open' : ''}`}>
+      <aside className={`sidebar ${open ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-brand">
           <div className="logo">ጤ</div>
-          <div>
-            <h1>Tena</h1>
-            <small>{me ? `Selam, ${me.first_name || 'friend'}` : 'Wellness companion'}</small>
-          </div>
+          {!collapsed && (
+            <div className="sidebar-brand-text">
+              <h1>Tena</h1>
+              <small>{me ? `Selam, ${me.first_name || 'friend'}` : 'Wellness companion'}</small>
+            </div>
+          )}
+          <button
+            className="sidebar-collapse-btn"
+            onClick={() => setCollapsed(c => !c)}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d={collapsed ? 'M5 2l5 5-5 5' : 'M9 2L4 7l5 5'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
         </div>
 
         {sections.map((s) => (
@@ -191,10 +203,60 @@ export default function App() {
         )}
 
         {tab === 'home' && (
-          <div className="grid-2">
-            <Dashboard />
-            <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
-              <Companion mood={chatMood} size="lg" companion={companion} showStatus={true} />
+          <div className="home-layout">
+            <div className="home-greeting card">
+              <div className="home-greeting-text">
+                <span className="home-eyebrow">{(() => {
+                  const h = new Date().getHours()
+                  if (h < 12) return 'Selam · Good morning'
+                  if (h < 18) return 'Selam · Good afternoon'
+                  return 'Selam · Good evening'
+                })()}</span>
+                <h2>{me?.first_name ? `${me.first_name},` : 'Friend,'} <span className="accent">how is your heart today?</span></h2>
+                <p>Take a breath. I'm right here — log a mood, talk it out, or just sit with me a moment.</p>
+                <div className="home-cta-row">
+                  <button className="btn btn-primary" onClick={() => setTab('chat')}>💬 Start a chat</button>
+                  <button className="btn btn-ghost" onClick={() => setTab('voice')}>🎙️ Voice journal</button>
+                </div>
+              </div>
+              <div className="home-greeting-art">
+                <Companion mood={chatMood} size="lg" companion={companion} showStatus={true} />
+              </div>
+            </div>
+
+            <div className="home-quick-grid">
+              <button className="quick-tile q-gold" onClick={() => setTab('chat')}>
+                <div className="quick-ico">💬</div>
+                <div className="quick-title">Talk to Tena</div>
+                <div className="quick-sub">Vent, reflect, code-switch</div>
+              </button>
+              <button className="quick-tile q-terra" onClick={() => setTab('voice')}>
+                <div className="quick-ico">🎙️</div>
+                <div className="quick-title">Voice Journal</div>
+                <div className="quick-sub">Speak it, release it</div>
+              </button>
+              <button className="quick-tile q-green" onClick={() => setTab('stats')}>
+                <div className="quick-ico">📈</div>
+                <div className="quick-title">My Progress</div>
+                <div className="quick-sub">Last 7 days at a glance</div>
+              </button>
+              <button className="quick-tile q-coffee" onClick={() => setTab('qr')}>
+                <div className="quick-ico">📱</div>
+                <div className="quick-title">Share Bot</div>
+                <div className="quick-sub">Invite a friend</div>
+              </button>
+            </div>
+
+            <div className="home-grid-bottom">
+              <div className="home-dashboard">
+                <Dashboard />
+              </div>
+              <aside className="home-tip card">
+                <div className="home-tip-badge">Today's tip</div>
+                <h3>The 5-4-3-2-1 reset</h3>
+                <p>Feeling overwhelmed? Name <b>5</b> things you see, <b>4</b> you can touch, <b>3</b> you hear, <b>2</b> you smell, and <b>1</b> you taste. It tells your nervous system: <i>you are safe</i>.</p>
+                <div className="home-tip-foot">— Tena · ጤና</div>
+              </aside>
             </div>
           </div>
         )}
