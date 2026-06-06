@@ -42,6 +42,23 @@ def telegram_webhook(request):
             message = update_data['message']
             chat_id = message['chat']['id']
             text = message.get('text', '')
+            user = message.get('from', {})
+            user_name = user.get('first_name', 'Friend')
+            is_bot = user.get('is_bot', False)
+            
+            # Filter out messages from other bots and spam
+            if is_bot:
+                logger.info(f"🤖 Ignoring message from bot: {user_name}")
+                return Response({'status': 'ignored_bot'}, status=200)
+            
+            # Filter out spam content
+            spam_keywords = ['porn', '🔥', '🔞', 'AI porn', 'best AI porn', 'evadast_bot']
+            text_lower = text.lower()
+            if any(keyword in text_lower for keyword in spam_keywords):
+                logger.info(f"🚫 Filtering spam message: {text[:50]}...")
+                return Response({'status': 'filtered_spam'}, status=200)
+            
+            logger.info(f"📩 Received: '{text}' from {user_name} (chat {chat_id})")
             
             # Handle /start command
             if text == '/start':
@@ -58,7 +75,7 @@ def telegram_webhook(request):
                     )
                     
                     # Send message via Telegram Bot API
-                    url = f"https://api.telegram.org/bot8219870105:AAHGiy0tMyrAD16iK_Va3jKwekznzAV43bw/sendMessage"
+                    url = f"https://api.telegram.org/bot8984244223:AAGWPEQ8_0cjupoOemwZRUxUhjHLij7FbD8/sendMessage"
                     payload = {
                         'chat_id': chat_id,
                         'text': welcome_text,
@@ -109,7 +126,7 @@ def telegram_webhook(request):
                         'burned': "🔴 Heard. Open Tena and let's talk for a minute."
                     }
                     
-                    url = f"https://api.telegram.org/bot8219870105:AAHGiy0tMyrAD16iK_Va3jKwekznzAV43bw/editMessageText"
+                    url = f"https://api.telegram.org/bot8984244223:AAGWPEQ8_0cjupoOemwZRUxUhjHLij7FbD8/editMessageText"
                     payload = {
                         'chat_id': chat_id,
                         'message_id': callback_query['message']['message_id'],
