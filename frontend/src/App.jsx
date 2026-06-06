@@ -3,6 +3,8 @@ import Chat from './components/Chat'
 import VoiceJournal from './components/VoiceJournal'
 import Dashboard from './components/Dashboard'
 import { api } from './api'
+import CrisisModal from './components/CrisisModal'
+import PitchBadge from './components/PitchBadge'
 
 const NAV = [
   { key: 'home',  label: 'Home',         ico: '🏠', section: 'Wellness' },
@@ -51,6 +53,7 @@ export default function App() {
   const [me, setMe] = useState(null)
   const [err, setErr] = useState(null)
   const [open, setOpen] = useState(false)
+  const [activeCrisis, setActiveCrisis] = useState(null)
 
   useEffect(() => {
     api.me().then(setMe).catch((e) => setErr(e.message))
@@ -122,9 +125,12 @@ export default function App() {
         )}
 
         {(tab === 'home' || tab === 'stats') && <Dashboard />}
-        {tab === 'chat' && <Chat />}
-        {tab === 'voice' && <VoiceJournal />}
+        {tab === 'chat' && <Chat onCrisis={setActiveCrisis} />}
+        {tab === 'voice' && <VoiceJournal onCrisis={setActiveCrisis} />}
       </main>
+
+      <CrisisModal data={activeCrisis} onClose={() => setActiveCrisis(null)} />
+      <PitchBadge onTriggerDemo={() => setActiveCrisis({})} />
     </div>
   )
 }

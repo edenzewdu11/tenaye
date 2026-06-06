@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
-import CrisisCard from './CrisisCard'
 import { haptic } from '../telegram'
 
-export default function VoiceJournal() {
+export default function VoiceJournal({ onCrisis }) {
   const [recording, setRecording] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [result, setResult] = useState(null)
-  const [crisis, setCrisis] = useState(null)
   const [entries, setEntries] = useState([])
   const [elapsed, setElapsed] = useState(0)
   const mediaRef = useRef(null)
@@ -56,9 +54,9 @@ export default function VoiceJournal() {
       const blob = new Blob(chunksRef.current, { type: mediaRef.current?.mimeType || 'audio/webm' })
       const res = await api.uploadVoice(blob, blob.type)
       setResult(res)
-      if (res.crisis) setCrisis({ resources: res.resources, message: res.reply })
-      const list = await api.journals()
-      setEntries(list)
+       if (res.crisis) onCrisis({ resources: res.resources, message: res.reply })
+       const list = await api.journals()
+       setEntries(list)
     } catch (e) {
       alert('Upload failed: ' + e.message)
     } finally {
@@ -69,7 +67,6 @@ export default function VoiceJournal() {
 
   return (
     <>
-      {crisis && <CrisisCard resources={crisis.resources} message={crisis.message} />}
       <div className="card">
         <h2>Voice Journal</h2>
         <div className="voice-stage">
