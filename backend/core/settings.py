@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework_simplejwt",
     "corsheaders",
     "api",
 ]
@@ -102,3 +103,21 @@ MINI_APP_URL = os.getenv("MINI_APP_URL", "http://localhost:5173")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 # Allow X-Telegram-Id header for web app users (always on for now)
 ALLOW_DEV_AUTH = os.getenv("ALLOW_DEV_AUTH", "true").lower() == "true"
+
+# JWT Configuration
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': os.getenv('DJANGO_SECRET_KEY', 'your-secret-key'),
+    'VERIFYING_KEY': None,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+}

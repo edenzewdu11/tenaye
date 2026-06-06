@@ -50,6 +50,12 @@ async function req(path, { method = 'GET', json, body, headers = {} } = {}) {
 }
 
 export const api = {
+  auth: {
+    login: (email, password) => req('/auth/login/', { method: 'POST', json: { email, password } }),
+    register: (email, password, firstName, lastName) => req('/auth/register/', { method: 'POST', json: { email, password, first_name: firstName, last_name: lastName } }),
+    logout: (refreshToken) => req('/auth/logout/', { method: 'POST', json: { refresh_token: refreshToken } }),
+    profile: () => req('/auth/profile/'),
+  },
   me: () => req('/me/'),
   chatHistory: () => req('/chat/'),
   sendChat: (content) => req('/chat/', { method: 'POST', json: { content } }),
