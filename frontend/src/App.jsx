@@ -421,7 +421,7 @@ function MainApp() {
                   <div className="checkin-visual">
                     <div className="checkin-orb">
                       <div className="checkin-character">
-                        <img src="/images/listening.png" alt="Tena Listening" className="checkin-character-img" />
+                        <div className="checkin-character-placeholder">👂</div>
                       </div>
                       <div className="listening-waves">
                         <div className="wave wave-1"></div>
