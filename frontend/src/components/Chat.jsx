@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
+
 import CrisisCard from './CrisisCard'
 import Companion from './Companion'
 import { haptic } from '../telegram'
@@ -10,6 +11,15 @@ export default function Chat({ companion, onMoodChange }) {
   const [sending, setSending] = useState(false)
   const [typing, setTyping] = useState(false)
   const [crisis, setCrisis] = useState(null)
+
+import { containsCrisisKeywords } from '../utils/crisisDetector'
+import { haptic } from '../telegram'
+
+export default function Chat({ onCrisis }) {
+  const [messages, setMessages] = useState([])
+  const [input, setInput] = useState('')
+  const [sending, setSending] = useState(false)
+
   const boxRef = useRef(null)
 
   useEffect(() => {
@@ -37,6 +47,13 @@ export default function Chat({ companion, onMoodChange }) {
   async function send() {
     const text = input.trim()
     if (!text || sending) return
+
+    if (containsCrisisKeywords(text)) {
+      setInput('')
+      onCrisis({})
+      return
+    }
+
     setSending(true)
     setInput('')
     onMoodChange?.('listening')
@@ -48,7 +65,7 @@ export default function Chat({ companion, onMoodChange }) {
       setTyping(false)
       setMessages((m) => [...m, { id: `r-${Date.now()}`, role: 'assistant', content: res.reply, crisis_flag: !!res.crisis }])
       if (res.crisis) {
-        setCrisis({ resources: res.resources, message: res.reply })
+        onCrisis({ resources: res.resources, message: res.reply })
         haptic('heavy')
         onMoodChange?.('empathetic')
       } else {
@@ -65,10 +82,32 @@ export default function Chat({ companion, onMoodChange }) {
 
   return (
     <>
+
       {crisis && <CrisisCard resources={crisis.resources} message={crisis.message} />}
       <div className="companion-chat-area">
         <div className="companion-col">
           <Companion mood={typing ? 'thinking' : (sending ? 'listening' : 'idle')} companion={companion} showStatus={true} />
+
+      <div className="card">
+        <h2>Chat with Tena</h2>
+        <div className="chat" ref={boxRef}>
+          {messages.length === 0 && (
+            <>
+              <div className="muted">Say hi — in English, Amharic, or both. Endemen neh? 👋</div>
+              <div className="chips">
+                <span className="chip" onClick={() => setInput("I'm stressed about my exams")}>📚 Exam stress</span>
+                <span className="chip" onClick={() => setInput("Things are too expensive lately")}>💸 Cost of living</span>
+                <span className="chip" onClick={() => setInput("I feel exhausted and burned out")}>🥱 Burnout</span>
+                <span className="chip" onClick={() => setInput("Family expectations are heavy")}>👨‍👩‍👧 Family</span>
+              </div>
+            </>
+          )}
+          {messages.map((m) => (
+            <div key={m.id} className={`msg ${m.role} ${m.crisis_flag ? 'crisis' : ''}`}>
+              {m.content}
+            </div>
+          ))}
+
         </div>
         <div className="chat-col">
           <div className="card">

@@ -6,16 +6,16 @@ import re
 
 # Keep this list conservative but realistic. English + Amharic latinization + Amharic script.
 CRISIS_PATTERNS = [
-    r"\bkill (?:myself|me)\b",
-    r"\bend (?:my )?life\b",
+    r"\bkill(?:ing)? (?:myself|me)\b",
+    r"\bend(?:ing)? (?:my )?life\b",
     r"\bsuicide\b",
     r"\bsuicidal\b",
     r"\bi want to die\b",
     r"\bi (?:can'?t|cant) go on\b",
     r"\bno reason to live\b",
-    r"\bharm myself\b",
+    r"\bharm(?:ing)? myself\b",
     r"\bself[- ]harm\b",
-    r"\bcutting myself\b",
+    r"\bcut(?:ting)? myself\b",
     # Amharic transliteration
     r"\brasen mageded\b",         # ራሴን ማጥፋት (kill myself)
     r"\bmotku\b",                  # I want to die (colloquial)

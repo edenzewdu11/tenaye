@@ -54,8 +54,22 @@ def chat(request):
         {"role": m.role, "content": m.content}
         for m in ChatMessage.objects.filter(user=user).order_by("created_at")[:40]
     ]
-    ChatMessage.objects.create(user=user, role="user", content=content)
+    user_msg = ChatMessage.objects.create(user=user, role="user", content=content)
     reply = chat_reply(history, content)
+    
+    if "CRISIS_TRIGGERED" in reply:
+        user_msg.crisis_flag = True
+        user_msg.save()
+        ChatMessage.objects.create(
+            user=user, role="assistant",
+            content=CRISIS_RESPONSE["message"], crisis_flag=True,
+        )
+        return Response({
+            "crisis": True,
+            "reply": CRISIS_RESPONSE["message"],
+            "resources": CRISIS_RESPONSE["resources"],
+        })
+
     ChatMessage.objects.create(user=user, role="assistant", content=reply)
 
     return Response({"crisis": False, "reply": reply})

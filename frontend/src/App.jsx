@@ -6,6 +6,8 @@ import Companion from './components/Companion'
 import Onboarding from './components/Onboarding'
 import Customize from './components/Customize'
 import { api } from './api'
+import CrisisModal from './components/CrisisModal'
+import PitchBadge from './components/PitchBadge'
 
 const NAV = [
   { key: 'home', label: 'Home', ico: '🏡', section: 'Wellness' },
@@ -63,6 +65,7 @@ export default function App() {
   const [me, setMe] = useState(null)
   const [err, setErr] = useState(null)
   const [open, setOpen] = useState(false)
+
   const [onboarding, setOnboarding] = useState(() => !localStorage.getItem('tena-onboarded'))
   const [theme, setTheme] = useState(() => localStorage.getItem('tena-theme') || 'warm')
   const [chatMood, setChatMood] = useState('idle')
@@ -74,6 +77,9 @@ export default function App() {
       return { gender: 'gentle', ageGroup: 'adult', style: 'modern', skinTone: 'warm' }
     }
   })
+
+  const [activeCrisis, setActiveCrisis] = useState(null)
+
 
   useEffect(() => {
     api.me().then(setMe).catch((e) => setErr(e.message))
@@ -186,7 +192,15 @@ export default function App() {
         {tab === 'voice' && <VoiceJournal />}
         {tab === 'customize' && <Customize companion={companion} onUpdate={handleCompanionUpdate} />}
         {tab === 'stats' && <Dashboard />}
+
+        {(tab === 'home' || tab === 'stats') && <Dashboard />}
+        {tab === 'chat' && <Chat onCrisis={setActiveCrisis} />}
+        {tab === 'voice' && <VoiceJournal onCrisis={setActiveCrisis} />}
+
       </main>
+
+      <CrisisModal data={activeCrisis} onClose={() => setActiveCrisis(null)} />
+      <PitchBadge onTriggerDemo={() => setActiveCrisis({})} />
     </div>
   )
 }
