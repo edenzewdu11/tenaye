@@ -25,7 +25,7 @@ const PAGES = {
     accent: 'to Tena',
     sub: 'Your companion is here. How are you feeling today?',
     heroTitle: 'Selam! I\'ve been waiting for you',
-    heroBody: 'Take a breath. Share what\'s on your mind, log a mood, or just say hi. ጤናህ ይጠብቅ።',
+    heroBody: 'Take a breath. Share what\'s on your mind, log a mood, or just say hi. ጤናህ ይጠበቅ።',
     heroIcon: '🌅',
   },
   chat: {
