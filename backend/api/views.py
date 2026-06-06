@@ -112,6 +112,39 @@ def telegram_webhook(request):
         return Response({'status': 'ok'}, status=200)  # Always return 200 to Telegram
 
 
+@api_view(['GET'])
+@permission_classes([])
+def test_bot(request):
+    """
+    Test endpoint to manually trigger bot messages
+    """
+    try:
+        from telegram import Bot
+        bot = Bot(token='8219870105:AAHGiy0tMyrAD16iK_Va3jKwekznzAV43bw')
+        
+        # Send test message to a specific chat ID (you'll need to provide this)
+        chat_id = request.GET.get('chat_id', 'YOUR_CHAT_ID_HERE')
+        
+        if chat_id != 'YOUR_CHAT_ID_HERE':
+            welcome_text = (
+                "ሰላም 👋 I'm *Tena* — your wellness companion.\n\n"
+                "• Tap *Open Tena* for the full app (chat, voice journal, dashboard).\n"
+                "• Tap *Open in browser* to use the website version.\n"
+                "• Use /check anytime for a quick mood check-in.\n"
+                "• Use /week to see your last 7 days."
+            )
+            
+            bot.send_message(chat_id=chat_id, text=welcome_text, parse_mode='Markdown')
+            
+            return Response({'status': 'message sent', 'chat_id': chat_id}, status=200)
+        else:
+            return Response({'status': 'provide chat_id parameter'}, status=400)
+            
+    except Exception as e:
+        logger.error(f"Error in test bot: {str(e)}")
+        return Response({'status': 'error', 'message': str(e)}, status=500)
+
+
 def parse_and_save_recommendations(user, text):
     """
     Looks for the [RECOMMENDATIONS] block in the reply.

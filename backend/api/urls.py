@@ -11,6 +11,7 @@ urlpatterns = [
     
     # Telegram webhook
     path("telegram-webhook/", views.telegram_webhook, name="telegram_webhook"),
+    path("test-bot/", views.test_bot, name="test_bot"),
     
     # Existing endpoints
     path("me/", views.me),
