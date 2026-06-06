@@ -3,24 +3,86 @@ from collections import OrderedDict
 
 from django.utils import timezone
 from rest_framework import status
-from rest_framework.decorators import api_view, parser_classes
+from rest_framework.decorators import api_view, parser_classes, authentication_classes, permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 
-from .models import CheckIn, ChatMessage, JournalEntry
+from .models import CheckIn, ChatMessage, JournalEntry, AppUser, TgUser
 from .serializers import (
     CheckInSerializer,
     ChatMessageSerializer,
     JournalEntrySerializer,
     TgUserSerializer,
 )
-from .crisis import is_crisis, CRISIS_RESPONSE
+from .crisis import is_crisis, CRISIS_RESPONSE, notify_emergency_contact
 from .gemini import chat_reply, transcribe_and_analyze
+
+
+def _tguser_for(user):
+    """Return a TgUser for any auth type (TgUser passthrough, AppUser gets a linked one)."""
+    if isinstance(user, TgUser):
+        return user
+    if isinstance(user, AppUser):
+        tg_user, _ = TgUser.objects.get_or_create(
+            telegram_id=-(user.pk),  # negative IDs won't clash with real Telegram IDs
+            defaults={
+                "first_name": user.name or user.email.split("@")[0],
+                "username": user.email.split("@")[0],
+            }
+        )
+        return tg_user
+    return user
+
+
+# -------- App Auth --------
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+@parser_classes([JSONParser])
+def register(request):
+    email = (request.data.get("email") or "").strip().lower()
+    password = request.data.get("password") or ""
+    name = (request.data.get("name") or "").strip()
+    interests = request.data.get("interests") or []
+    if not email or not password:
+        return Response({"error": "email and password required"}, status=400)
+    if len(password) < 6:
+        return Response({"error": "password must be at least 6 characters"}, status=400)
+    if AppUser.objects.filter(email=email).exists():
+        return Response({"error": "email already registered"}, status=409)
+    user = AppUser(email=email, name=name, interests=interests if isinstance(interests, list) else [])
+    user.set_password(password)
+    user.save()
+    return Response({"token": user.token, "name": user.name, "email": user.email, "interests": user.interests}, status=201)
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+@parser_classes([JSONParser])
+def login(request):
+    email = (request.data.get("email") or "").strip().lower()
+    password = request.data.get("password") or ""
+    try:
+        user = AppUser.objects.get(email=email)
+    except AppUser.DoesNotExist:
+        return Response({"error": "invalid credentials"}, status=401)
+    if not user.check_password(password):
+        return Response({"error": "invalid credentials"}, status=401)
+    user.rotate_token()
+    user.save()
+    return Response({"token": user.token, "name": user.name, "email": user.email})
+
+
 
 
 @api_view(["GET"])
 def me(request):
-    return Response(TgUserSerializer(request.user).data)
+    user = request.user
+    if isinstance(user, AppUser):
+        return Response({"first_name": user.name or user.email.split("@")[0], "email": user.email})
+    return Response(TgUserSerializer(user).data)
 
 
 # -------- Chat --------

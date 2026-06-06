@@ -6,7 +6,8 @@ import Companion from './components/Companion'
 import Onboarding from './components/Onboarding'
 import Customize from './components/Customize'
 import QRCode from './components/QRCode'
-import { api } from './api'
+import AuthScreen from './components/AuthScreen'
+import { api, getStoredToken, setStoredToken, setStoredUser, isGuest } from './api'
 import CrisisModal from './components/CrisisModal'
 import PitchBadge from './components/PitchBadge'
 
@@ -90,6 +91,11 @@ export default function App() {
 
   const [activeCrisis, setActiveCrisis] = useState(null)
 
+  // Auth state — null means not decided yet
+  const [authDone, setAuthDone] = useState(() => {
+    return !!getStoredToken() || !!localStorage.getItem('tena-guest')
+  })
+
 
   useEffect(() => {
     api.me().then(setMe).catch((e) => setErr(e.message))
@@ -116,6 +122,21 @@ export default function App() {
 
   if (onboarding) {
     return <Onboarding onComplete={handleOnboardingComplete} companion={companion} />
+  }
+
+  if (!authDone) {
+    return (
+      <AuthScreen
+        onAuth={(res) => {
+          setMe({ first_name: res.name, ...res })
+          setAuthDone(true)
+        }}
+        onGuest={() => {
+          localStorage.setItem('tena-guest', '1')
+          setAuthDone(true)
+        }}
+      />
+    )
   }
 
   return (
@@ -151,6 +172,16 @@ export default function App() {
         <div className="sidebar-footer">
           <div className="quote">"You don't have to be okay to be worthy of care."</div>
           <div className="author">— Tena · ጤና</div>
+          {getStoredToken() && (
+            <button className="auth-guest-btn" style={{ marginTop: 12 }} onClick={() => {
+              setStoredToken(null)
+              setStoredUser(null)
+              localStorage.removeItem('tena-guest')
+              setAuthDone(false)
+            }}>
+              Sign out
+            </button>
+          )}
         </div>
       </aside>
 

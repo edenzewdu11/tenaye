@@ -17,7 +17,7 @@ from urllib.parse import parse_qsl
 from django.conf import settings
 from rest_framework import authentication, exceptions
 
-from .models import TgUser
+from .models import TgUser, AppUser
 
 
 def _verify_init_data(init_data: str, bot_token: str, max_age_seconds: int = 60 * 60 * 24):
@@ -73,7 +73,17 @@ class TelegramAuthentication(authentication.BaseAuthentication):
                 })
                 return (user, None)
 
-        return None  # let DRF return 401
+        # App token auth (email/password registered users)
+        bearer = request.META.get("HTTP_AUTHORIZATION", "")
+        if bearer.lower().startswith("bearer "):
+            token = bearer[7:].strip()
+            try:
+                app_user = AppUser.objects.get(token=token)
+                return (app_user, None)
+            except AppUser.DoesNotExist:
+                raise exceptions.AuthenticationFailed("Invalid token")
+
+        return None
 
 
 def _get_or_create_user(u: dict) -> TgUser:

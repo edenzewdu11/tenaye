@@ -56,9 +56,10 @@ WSGI_APPLICATION = "core.wsgi.application"
 
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 if DATABASE_URL:
-    DATABASES = {
-        "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
-    }
+    # Disable ssl_require for local Docker postgres; Neon needs SSL but passes it via the URL param
+    _db_config = dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=False)
+    # If the URL already contains sslmode=require, psycopg will honour it
+    DATABASES = {"default": _db_config}
 else:
     DATABASES = {
         "default": {

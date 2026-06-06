@@ -1,5 +1,47 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password, check_password as django_check_password
+import secrets
 
+
+class AppUser(models.Model):
+    """Email/password registered users."""
+    email = models.EmailField(unique=True)
+    password_hash = models.CharField(max_length=256)
+    name = models.CharField(max_length=128, blank=True, default="")
+    token = models.CharField(max_length=64, unique=True, blank=True)
+    interests = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    is_authenticated = True
+    is_anonymous = False
+
+    def set_password(self, raw):
+        self.password_hash = make_password(raw)
+
+    def check_password(self, raw):
+        return django_check_password(raw, self.password_hash)
+
+    def rotate_token(self):
+        self.token = secrets.token_urlsafe(32)
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.rotate_token()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.email
+
+
+class GuestUser:
+    """Ephemeral unauthenticated user — identified by a UUID from the client."""
+    is_authenticated = False
+    is_anonymous = True
+
+    def __init__(self, guest_id: str):
+        self.guest_id = guest_id
+        self.first_name = "Guest"
+        self.telegram_id = None
 
 class TgUser(models.Model):
     telegram_id = models.BigIntegerField(unique=True, db_index=True)
