@@ -31,7 +31,7 @@ def get_ai_response(user_message, user_name):
         
         # Configure Gemini API
         genai.configure(api_key="AIzaSyDj1mLihdo9x2PsvEaQ46ZdXP50q1U2OY4")
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
         # Create wellness-focused prompt
         prompt = f"""
