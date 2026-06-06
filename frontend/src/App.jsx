@@ -103,6 +103,7 @@ function MainApp() {
   const [open, setOpen] = useState(false)
   const [crisis, setCrisis] = useState(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [theme, setTheme] = useState(() => localStorage.getItem('tena-theme') || 'warm')
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -121,6 +122,15 @@ function MainApp() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  useEffect(() => {
+    document.body.setAttribute('data-theme', theme === 'night' ? 'night' : '')
+    localStorage.setItem('tena-theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'warm' ? 'night' : 'warm')
+  }
 
   const fetchMe = useCallback(async () => {
     try {
@@ -218,51 +228,145 @@ function MainApp() {
         <div className="page-content">
           {tab === 'home' && (
             <div className="home-page">
-              <div className="home-greeting">
-                <div className="home-greeting-text">
-                  <h2>{PAGES[tab].heroTitle}</h2>
-                  <p>{PAGES[tab].heroBody}</p>
+              {/* Enhanced Hero Section */}
+              <div className="home-hero">
+                <div className="hero-background">
+                  <div className="hero-pattern"></div>
+                  <div className="hero-gradient"></div>
                 </div>
-                <div className="home-greeting-art">
-                  <div className="character-avatar">
-                    <img src="/images/normalimage.png" alt="Tena Companion" className="character-img" />
+                <div className="home-greeting enhanced">
+                  <div className="greeting-content">
+                    <div className="greeting-badge">
+                      <span className="badge-icon">✨</span>
+                      <span className="badge-text">Welcome Back</span>
+                    </div>
+                    <h1>{PAGES[tab].heroTitle}</h1>
+                    <p>{PAGES[tab].heroBody}</p>
+                    <div className="greeting-stats">
+                      <div className="stat-item">
+                        <span className="stat-number">7</span>
+                        <span className="stat-label">Day Streak</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-number">92%</span>
+                        <span className="stat-label">Wellness Score</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="greeting-visual">
+                    <div className="character-orb">
+                      <img src="/images/normalimage.png" alt="Tena Companion" className="character-img" />
+                      <div className="orb-ring"></div>
+                      <div className="orb-particles">
+                        <span className="particle">✨</span>
+                        <span className="particle">💫</span>
+                        <span className="particle">⭐</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
               
-              <div className="home-quick">
-                <h3>Quick Actions</h3>
-                <div className="home-quick-grid">
-                  <button className="quick-tile" onClick={() => setTab('chat')}>
-                    <div className="tile-icon">💬</div>
-                    <h4>Chat with Tena</h4>
-                    <p>Talk about what's on your mind</p>
+              {/* Enhanced Quick Actions */}
+              <div className="home-quick enhanced">
+                <div className="section-header">
+                  <h3>Quick Actions</h3>
+                  <div className="header-accent"></div>
+                  <button className="theme-toggle" onClick={() => toggleTheme()}>
+                    <span className="theme-icon">{theme === 'warm' ? '🌙' : '☀️'}</span>
                   </button>
-                  <button className="quick-tile" onClick={() => setTab('voice')}>
-                    <div className="tile-icon">🎙️</div>
-                    <h4>Voice Journal</h4>
-                    <p>Speak your thoughts freely</p>
+                </div>
+                <div className="home-quick-grid enhanced">
+                  <button className="quick-tile enhanced chat-tile" onClick={() => setTab('chat')}>
+                    <div className="tile-background"></div>
+                    <div className="tile-content">
+                      <div className="tile-icon-wrapper">
+                        <div className="tile-icon">💬</div>
+                        <div className="tile-glow"></div>
+                      </div>
+                      <h4>Chat with Tena</h4>
+                      <p>Talk about what's on your mind</p>
+                      <div className="tile-arrow">→</div>
+                    </div>
                   </button>
-                  <button className="quick-tile" onClick={() => setTab('stats')}>
-                    <div className="tile-icon">📊</div>
-                    <h4>Progress</h4>
-                    <p>See your wellness journey</p>
+                  <button className="quick-tile enhanced voice-tile" onClick={() => setTab('voice')}>
+                    <div className="tile-background"></div>
+                    <div className="tile-content">
+                      <div className="tile-icon-wrapper">
+                        <div className="tile-icon">🎙️</div>
+                        <div className="tile-glow"></div>
+                      </div>
+                      <h4>Voice Journal</h4>
+                      <p>Speak your thoughts freely</p>
+                      <div className="tile-arrow">→</div>
+                    </div>
                   </button>
-                  <button className="quick-tile" onClick={() => setTab('customize')}>
-                    <div className="tile-icon">🎨</div>
-                    <h4>Customize</h4>
-                    <p>Personalize your companion</p>
+                  <button className="quick-tile enhanced stats-tile" onClick={() => setTab('stats')}>
+                    <div className="tile-background"></div>
+                    <div className="tile-content">
+                      <div className="tile-icon-wrapper">
+                        <div className="tile-icon">📊</div>
+                        <div className="tile-glow"></div>
+                      </div>
+                      <h4>Progress</h4>
+                      <p>See your wellness journey</p>
+                      <div className="tile-arrow">→</div>
+                    </div>
+                  </button>
+                  <button className="quick-tile enhanced customize-tile" onClick={() => setTab('customize')}>
+                    <div className="tile-background"></div>
+                    <div className="tile-content">
+                      <div className="tile-icon-wrapper">
+                        <div className="tile-icon">🎨</div>
+                        <div className="tile-glow"></div>
+                      </div>
+                      <h4>Customize</h4>
+                      <p>Personalize your companion</p>
+                      <div className="tile-arrow">→</div>
+                    </div>
                   </button>
                 </div>
               </div>
 
-              <div className="home-checkin-tip-row">
-                <CheckIn me={me} setMe={setMe} onCrisis={setCrisis} />
-                <div className="home-tip">
-                  <div className="tip-icon">💡</div>
+              {/* Enhanced Check-in and Tip Section */}
+              <div className="home-content-row">
+                <div className="enhanced-checkin">
+                  <div className="checkin-header">
+                    <div className="checkin-icon-wrapper">
+                      <div className="checkin-icon">🌟</div>
+                      <div className="icon-pulse"></div>
+                    </div>
+                    <div className="checkin-title">
+                      <h3>Daily Check-in</h3>
+                      <p>How are you feeling today?</p>
+                    </div>
+                  </div>
+                  <CheckIn me={me} setMe={setMe} onCrisis={setCrisis} />
+                </div>
+                
+                <div className="enhanced-tip">
+                  <div className="tip-header">
+                    <div className="tip-icon-wrapper">
+                      <div className="tip-icon">💡</div>
+                      <div className="tip-glow"></div>
+                    </div>
+                    <div className="tip-title">
+                      <h3>Today's Wisdom</h3>
+                      <p>Your daily dose of inspiration</p>
+                    </div>
+                  </div>
                   <div className="tip-content">
-                    <h3>Today's Tip</h3>
-                    <p>Take 3 deep breaths before responding to stressful situations. It gives you a moment to think and react more calmly.</p>
+                    <p>Take 3 deep breaths before responding to stressful situations. It gives you a moment to think and react more calmly. Your mind will thank you.</p>
+                    <div className="tip-actions">
+                      <button className="tip-action-btn">
+                        <span>💭</span>
+                        Reflect
+                      </button>
+                      <button className="tip-action-btn">
+                        <span>📝</span>
+                        Note
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
