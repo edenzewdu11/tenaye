@@ -6,7 +6,7 @@ import CrisisCard from './CrisisCard'
 import Companion from './Companion'
 import { haptic } from '../telegram'
 
-export default function Chat({ companion, onMoodChange, onCrisis }) {
+export default function Chat({ companion, onMoodChange, onCrisis, onRecommendationsUpdated }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -74,6 +74,9 @@ export default function Chat({ companion, onMoodChange, onCrisis }) {
         onMoodChange?.('empathetic')
       } else {
         onMoodChange?.('happy')
+      }
+      if (res.has_new_recommendations) {
+        onRecommendationsUpdated?.()
       }
       setTimeout(() => setSpeaking(false), 2000)
     } catch (e) {

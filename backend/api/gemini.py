@@ -50,6 +50,14 @@ STYLE
 - If the user shows signs of severe distress, gently encourage them to reach out
   to the Ethiopian Mental Health Helpline (8149).
 
+LOCATION RECOMMENDATIONS (NEARBY RESET)
+- Recommend physical wellness locations in Ethiopia (especially Addis Ababa, like Entoto Park, Friendship Park, Unity Park, Tomoca Coffee, Kuriftu, National Museum, etc.) based on the user's interests (e.g. coffee, hiking, history, nature, reading, quiet spaces).
+- If you do not know the user's specific interests (or their neighborhood/general area to find something nearby), ask them a friendly question about what they like to do to relax, or where in the city they are located so you can suggest nearby spots.
+- Whenever you recommend physical locations in your response, you MUST append a JSON list of recommendations at the very end of your response in this exact format:
+  [RECOMMENDATIONS]
+  [{"name": "Location Name", "category": "Category", "description": "Short description of the location", "reason": "Why it matches their interest and location context"}]
+  Ensure the categories are simple, such as: Park, Cafe, Wellness, Museum, Library, or Landmark. Ensure this block is on a new line after [RECOMMENDATIONS]. If you are not recommending any locations in a message, do not append this block.
+
 CRITICAL SAFETY INSTRUCTION: If the user expresses intent, thoughts, or plans of self-harm or suicide, you must immediately stop the normal conversation. Reply ONLY with the strict JSON string: {"status": "CRISIS_TRIGGERED"} and write absolutely no other text.
 
 Begin every conversation as if continuing a chat with a friend — no greetings like
@@ -83,6 +91,105 @@ def chat_reply(history: List[Dict], user_message: str) -> str:
     except Exception as e:
         logger.exception("Gemini chat failed: %s", e)
         return _fallback_reply(user_message)
+
+
+EXPLORE_PROMPT = """You are Tena's location explorer for Ethiopia. The user tells you what they're in the mood for today — like going to a park, watching a movie, listening to music, gaming, eating out, reading, working out, etc.
+
+Your job is to suggest 3-5 REAL nearby places in Addis Ababa, Ethiopia that match their interest. Respond ONLY with a valid JSON object in this exact format:
+{
+  "message": "A short, friendly 1-2 sentence intro in the user's language style (Amharic/English/mix)",
+  "places": [
+    {
+      "name": "Exact real place name",
+      "category": "Park|Cafe|Cinema|Restaurant|Gym|Library|Museum|Game Zone|Music Venue|Landmark",
+      "description": "2-3 sentence description of the place, what makes it special",
+      "why": "Why this matches what the user asked for",
+      "area": "Neighborhood/area in Addis (e.g. Bole, Piassa, Kazanchis, Sarbet, Megenagna)"
+    }
+  ]
+}
+
+RULES:
+- Only suggest REAL places that exist in Addis Ababa or nearby Ethiopian cities.
+- Include the neighborhood/area so the user knows if it's nearby.
+- Keep descriptions warm and inviting, like a friend recommending a spot.
+- If the user's request is vague, suggest a mix of categories.
+- Respond ONLY with the JSON, no markdown fences, no extra text.
+"""
+
+
+def explore_places(query: str) -> Dict:
+    """Given a user interest/mood query, return structured place suggestions."""
+    if not genai or not settings.GEMINI_API_KEY:
+        return _fallback_explore(query)
+    try:
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        model = genai.GenerativeModel(
+            "gemini-flash-latest",
+            system_instruction=EXPLORE_PROMPT,
+        )
+        resp = model.generate_content(query)
+        text = (resp.text or "").strip()
+        # Strip markdown fences
+        if text.startswith("```"):
+            text = text.strip("`")
+            if text.lower().startswith("json"):
+                text = text[4:].strip()
+        data = json.loads(text)
+        return data
+    except Exception as e:
+        logger.exception("Gemini explore failed: %s", e)
+        return _fallback_explore(query)
+
+
+def _fallback_explore(query: str) -> Dict:
+    """Offline fallback for the explore feature."""
+    import random
+    msg = (query or "").lower()
+
+    all_places = [
+        {"name": "Entoto Park", "category": "Park", "description": "Mountain forest park with hiking trails, zip-lines, and panoramic views of Addis Ababa. Fresh air and eucalyptus trees everywhere.", "why": "Perfect for nature lovers and anyone needing fresh air and a reset.", "area": "Entoto"},
+        {"name": "Friendship Park", "category": "Park", "description": "Central urban park with a lake, botanical gardens, and scenic walkways. Great for a peaceful afternoon stroll.", "why": "A green oasis in the city for relaxation and quiet reflection.", "area": "Bole"},
+        {"name": "Unity Park", "category": "Park", "description": "Beautiful palace compound with gardens, a mini zoo, museums, and historical exhibits. A whole-day experience.", "why": "History, nature, and culture all in one place.", "area": "Arat Kilo"},
+        {"name": "Tomoca Coffee", "category": "Cafe", "description": "Addis Ababa's most legendary coffee house since the 1950s. Standing-room only, incredible macchiato.", "why": "The ultimate Ethiopian coffee experience — a must for any coffee lover.", "area": "Piassa"},
+        {"name": "Garden of Coffee", "category": "Cafe", "description": "Modern specialty coffee shop with a beautiful garden setting. Great pastries and a calm vibe.", "why": "Perfect for a relaxing coffee break with good ambiance.", "area": "Bole"},
+        {"name": "Edna Mall Cinema", "category": "Cinema", "description": "Modern cinema showing the latest Ethiopian and Hollywood films. Comfy seats, popcorn, the whole experience.", "why": "Great for a movie date or solo film time.", "area": "Bole"},
+        {"name": "Capital Hotel Gym & Spa", "category": "Gym", "description": "Well-equipped gym with pool, sauna, and spa services. Day passes available.", "why": "Working out and self-care in one spot.", "area": "Kazanchis"},
+        {"name": "National Museum of Ethiopia", "category": "Museum", "description": "Home to Lucy (Dinkinesh), the 3.2 million year old fossil. Rich cultural and historical exhibits.", "why": "A meaningful visit that connects you to Ethiopian heritage.", "area": "Arat Kilo"},
+        {"name": "Yod Abyssinia", "category": "Music Venue", "description": "Traditional Ethiopian restaurant with live music, cultural dance performances, and authentic food.", "why": "Live music, eskista dancing, and amazing food — an unforgettable night out.", "area": "Bole"},
+        {"name": "Game Zone Addis", "category": "Game Zone", "description": "Indoor gaming center with arcade games, billiards, bowling, and VR experiences.", "why": "Fun indoor activity for gaming enthusiasts.", "area": "Bole"},
+        {"name": "Kuriftu Resort", "category": "Wellness", "description": "Lakeside resort with spa, hot springs, and nature walks. Day trip packages available.", "why": "Ultimate relaxation and wellness escape near Addis.", "area": "Debre Zeit"},
+        {"name": "BookCafe", "category": "Library", "description": "Cozy cafe with a library of books you can read while sipping coffee. Quiet and peaceful atmosphere.", "why": "Perfect for book lovers who want to read in a cozy setting.", "area": "Bole"},
+    ]
+
+    # Filter by interest keywords
+    filtered = []
+    if any(k in msg for k in ["park", "nature", "hike", "walk", "tree", "green", "outdoor"]):
+        filtered = [p for p in all_places if p["category"] in ("Park", "Wellness")]
+    elif any(k in msg for k in ["movie", "film", "cinema", "watch"]):
+        filtered = [p for p in all_places if p["category"] == "Cinema"]
+    elif any(k in msg for k in ["music", "dance", "concert", "live", "eskista"]):
+        filtered = [p for p in all_places if p["category"] == "Music Venue"]
+    elif any(k in msg for k in ["game", "gaming", "play", "arcade", "bowl"]):
+        filtered = [p for p in all_places if p["category"] == "Game Zone"]
+    elif any(k in msg for k in ["coffee", "cafe", "buna", "macchiato"]):
+        filtered = [p for p in all_places if p["category"] == "Cafe"]
+    elif any(k in msg for k in ["gym", "workout", "exercise", "spa", "swim"]):
+        filtered = [p for p in all_places if p["category"] in ("Gym", "Wellness")]
+    elif any(k in msg for k in ["book", "read", "library", "study"]):
+        filtered = [p for p in all_places if p["category"] in ("Library", "Cafe")]
+    elif any(k in msg for k in ["museum", "history", "culture", "art"]):
+        filtered = [p for p in all_places if p["category"] == "Museum"]
+
+    if not filtered:
+        filtered = random.sample(all_places, min(4, len(all_places)))
+
+    places = filtered[:5]
+
+    return {
+        "message": "Here are some spots I think you'd love! Check them out 🌟",
+        "places": places,
+    }
 
 
 def transcribe_and_analyze(audio_bytes: bytes, mime_type: str = "audio/webm") -> Dict:
@@ -138,13 +245,18 @@ def _fallback_reply(user_message: str) -> str:
     # Places to visit / go out
     if any(k in msg for k in ["place", "go out", "where", "visit", "park", "cafe", "fun place", "bored", "boring"]):
         responses = [
-            "🌳 Try visiting *Entoto Park* — fresh air, hiking trails, and a beautiful view of Addis. Great for clearing your mind!",
-            "☕ Go to *Tomoca Coffee* in Piassa — best coffee in Addis, perfect for journaling or just people-watching.",
-            "🌿 *Friendship Park* near Bole is peaceful — bring a book, walk around the lake, breathe.",
-            "🎨 Visit the *National Museum* or *Red Terror Martyrs' Memorial* — meaningful, quiet spaces to reflect.",
-            "🛍️ Shiro Meda or Merkato for some retail therapy — sometimes a little walk + people = mood boost.",
-            "⛰️ *Unity Park* at the Palace — gardens, animals, history. A whole-day reset.",
-            "🌅 *Sululta* for a day trip — the green hills outside Addis are healing."
+            ("🌳 Try visiting *Entoto Park* — fresh air, hiking trails, and a beautiful view of Addis. Great for clearing your mind!\n\n"
+             "[RECOMMENDATIONS]\n"
+             '[{"name": "Entoto Park", "category": "Park", "description": "Beautiful mountain forest park with walking paths and panoramic views of Addis Ababa.", "reason": "Recommended because you want to visit a park or quiet nature trail nearby."}]'),
+            ("☕ Go to *Tomoca Coffee* in Piassa — best coffee in Addis, perfect for journaling or just people-watching.\n\n"
+             "[RECOMMENDATIONS]\n"
+             '[{"name": "Tomoca Coffee", "category": "Cafe", "description": "Historic Italian-style coffee house in Piassa, Addis Ababa.", "reason": "Recommended because you are looking for a cafe nearby to relax."}]'),
+            ("🌿 *Friendship Park* near Bole is peaceful — bring a book, walk around the lake, breathe.\n\n"
+             "[RECOMMENDATIONS]\n"
+             '[{"name": "Friendship Park", "category": "Park", "description": "Central urban park with a lake, botanical gardens, and scenic walkways.", "reason": "Recommended because you are seeking a peaceful green space nearby."}]'),
+            ("⛰️ *Unity Park* at the Palace — gardens, animals, history. A whole-day reset.\n\n"
+             "[RECOMMENDATIONS]\n"
+             '[{"name": "Unity Park", "category": "Park", "description": "Historic palace compound featuring green spaces, zoo, and museum exhibitions.", "reason": "Recommended because you want an interesting local destination to visit."}]')
         ]
         return random.choice(responses)
     
