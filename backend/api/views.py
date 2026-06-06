@@ -41,14 +41,14 @@ def telegram_webhook(request):
         if 'message' in update_data:
             message = update_data['message']
             chat_id = message['chat']['id']
+            text = message.get('text', '')
             
             # Handle /start command
-            if message.get('text') == '/start':
+            if text == '/start':
                 try:
-                    from telegram import Bot
-                    bot = Bot(token='8219870105:AAHGiy0tMyrAD16iK_Va3jKwekznzAV43bw')
+                    import requests
                     
-                    # Send welcome message
+                    # Send welcome message using direct HTTP API
                     welcome_text = (
                         "ሰላም 👋 I'm *Tena* — your wellness companion.\n\n"
                         "• Tap *Open Tena* for the full app (chat, voice journal, dashboard).\n"
@@ -57,13 +57,22 @@ def telegram_webhook(request):
                         "• Use /week to see your last 7 days."
                     )
                     
-                    bot.send_message(chat_id=chat_id, text=welcome_text, parse_mode='Markdown')
+                    # Send message via Telegram Bot API
+                    url = f"https://api.telegram.org/bot8219870105:AAHGiy0tMyrAD16iK_Va3jKwekznzAV43bw/sendMessage"
+                    payload = {
+                        'chat_id': chat_id,
+                        'text': welcome_text,
+                        'parse_mode': 'Markdown'
+                    }
+                    
+                    response = requests.post(url, json=payload)
+                    logger.info(f"Telegram API response: {response.status_code} - {response.text}")
                     
                     # Send check-in prompt
-                    bot.send_message(
-                        chat_id=chat_id, 
-                        text="How is your energy today?",
-                        reply_markup={
+                    checkin_payload = {
+                        'chat_id': chat_id,
+                        'text': "How is your energy today?",
+                        'reply_markup': {
                             'inline_keyboard': [
                                 [
                                     {'text': '🟢 Good', 'callback_data': 'ci:good'},
@@ -75,7 +84,11 @@ def telegram_webhook(request):
                                 ]
                             ]
                         }
-                    )
+                    }
+                    
+                    checkin_response = requests.post(url, json=checkin_payload)
+                    logger.info(f"Checkin response: {checkin_response.status_code} - {checkin_response.text}")
+                    
                 except Exception as e:
                     logger.error(f"Error sending Telegram message: {str(e)}")
         
@@ -86,8 +99,7 @@ def telegram_webhook(request):
             callback_data = callback_query['data']
             
             try:
-                from telegram import Bot
-                bot = Bot(token='8219870105:AAHGiy0tMyrAD16iK_Va3jKwekznzAV43bw')
+                import requests
                 
                 if callback_data.startswith('ci:'):
                     mood = callback_data.split(':')[1]
@@ -97,19 +109,24 @@ def telegram_webhook(request):
                         'burned': "🔴 Heard. Open Tena and let's talk for a minute."
                     }
                     
-                    bot.edit_message_text(
-                        chat_id=chat_id,
-                        message_id=callback_query['message']['message_id'],
-                        text=mood_messages.get(mood, "Thanks for checking in!")
-                    )
+                    url = f"https://api.telegram.org/bot8219870105:AAHGiy0tMyrAD16iK_Va3jKwekznzAV43bw/editMessageText"
+                    payload = {
+                        'chat_id': chat_id,
+                        'message_id': callback_query['message']['message_id'],
+                        'text': mood_messages.get(mood, "Thanks for checking in!")
+                    }
+                    
+                    response = requests.post(url, json=payload)
+                    logger.info(f"Callback response: {response.status_code} - {response.text}")
+                    
             except Exception as e:
                 logger.error(f"Error handling callback query: {str(e)}")
         
-        return Response({'status': 'ok'}, status=200)
+        return Response({'status': 'ok', 'received': 'true'}, status=200)
         
     except Exception as e:
         logger.error(f"Error in telegram webhook: {str(e)}")
-        return Response({'status': 'ok'}, status=200)  # Always return 200 to Telegram
+        return Response({'status': 'ok', 'error': str(e)}, status=200)  # Always return 200 to Telegram
 
 
 @api_view(['GET'])
