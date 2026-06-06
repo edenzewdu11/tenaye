@@ -138,9 +138,15 @@ body::after {
 .sidebar {
   width: var(--sidebar-w);
   flex: 0 0 var(--sidebar-w);
-  background: var(--warm-panel-2);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(212, 160, 23, 0.18), transparent 55%),
+    radial-gradient(circle at 100% 100%, rgba(194, 101, 60, 0.16), transparent 55%),
+    linear-gradient(180deg, var(--warm-panel-2) 0%, var(--warm-panel) 100%);
   border-right: 1px solid var(--warm-border);
+  box-shadow: inset -1px 0 0 rgba(212, 160, 23, 0.08);
   padding: 20px 12px;
+  position: relative;
+  overflow: hidden;
   display: flex; flex-direction: column; gap: 4px;
   position: sticky; top: 0;
   height: 100dvh;
@@ -149,16 +155,44 @@ body::after {
   transition: width var(--transition), flex-basis var(--transition), padding var(--transition);
 }
 
+.sidebar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 15%, rgba(212, 160, 23, 0.08) 0 2px, transparent 3px),
+    radial-gradient(circle at 80% 35%, rgba(194, 101, 60, 0.08) 0 2px, transparent 3px),
+    radial-gradient(circle at 30% 70%, rgba(212, 160, 23, 0.06) 0 2px, transparent 3px),
+    radial-gradient(circle at 75% 90%, rgba(194, 101, 60, 0.06) 0 2px, transparent 3px);
+  pointer-events: none;
+  z-index: 0;
+}
+.sidebar > * { position: relative; z-index: 1; }
+
 .sidebar-brand {
   display: flex; align-items: center; gap: 10px;
   padding: 4px 6px 16px;
-  border-bottom: 1px solid var(--warm-border);
+  border-bottom: 1px dashed rgba(212, 160, 23, 0.35);
   margin-bottom: 8px;
+  position: relative;
+}
+.sidebar-brand::after {
+  content: '';
+  position: absolute;
+  left: 50%; bottom: -1px;
+  transform: translateX(-50%);
+  width: 40px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+@keyframes logoGlow {
+  0%, 100% { box-shadow: 0 4px 14px rgba(212, 160, 23, 0.35), 0 0 0 0 rgba(212, 160, 23, 0.4); }
+  50%      { box-shadow: 0 6px 18px rgba(212, 160, 23, 0.5),  0 0 0 6px rgba(212, 160, 23, 0); }
 }
 .sidebar-brand .logo {
   flex: 0 0 40px;
   width: 40px; height: 40px; border-radius: 12px;
   background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  animation: logoGlow 3s ease-in-out infinite;
   display: grid; place-items: center;
   font-weight: 800; color: #fff; font-size: 18px;
   font-family: 'Noto Sans Ethiopic', serif;
@@ -228,19 +262,31 @@ body::after {
 .sidebar.collapsed .sidebar-brand .logo { flex: 0 0 40px; }
 
 .nav-section-label {
-  font-size: 10px; color: var(--warm-muted); font-weight: 700;
-  text-transform: uppercase; letter-spacing: 1.8px;
-  padding: 12px 10px 4px;
+  font-size: 10px; color: var(--terracotta); font-weight: 800;
+  text-transform: uppercase; letter-spacing: 2px;
+  padding: 14px 10px 6px;
   white-space: nowrap;
   overflow: hidden;
   transition: all var(--transition);
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-section-label::before {
+  content: '◆';
+  color: var(--gold);
+  font-size: 8px;
+}
+.nav-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(212, 160, 23, 0.3), transparent);
 }
 
 .nav-item {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 10px;
-  border-radius: 10px;
-  background: transparent; border: none;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: transparent; border: 1px solid transparent;
   color: var(--warm-text-2);
   font-size: 14px; font-weight: 600;
   cursor: pointer; text-align: left;
@@ -251,35 +297,71 @@ body::after {
   white-space: nowrap;
   overflow: hidden;
 }
+.nav-item::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0;
+  background: linear-gradient(90deg, rgba(212, 160, 23, 0.18), transparent);
+  transition: width var(--transition);
+  z-index: -1;
+}
 .nav-item:hover {
   background: var(--gold-light);
   color: var(--coffee);
+  border-color: rgba(212, 160, 23, 0.25);
+  transform: translateX(2px);
 }
-.nav-item .ico { font-size: 18px; width: 22px; flex: 0 0 22px; text-align: center; }
+.nav-item:hover::after { width: 100%; }
+.nav-item:hover .ico { transform: scale(1.15) rotate(-6deg); }
+.nav-item .ico { font-size: 18px; width: 22px; flex: 0 0 22px; text-align: center; transition: transform var(--transition); }
 .nav-label { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+@keyframes activeShimmer {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
 .nav-item.active {
-  background: linear-gradient(135deg, var(--gold), var(--terracotta));
+  background: linear-gradient(135deg, var(--gold), var(--terracotta), var(--gold));
+  background-size: 200% 200%;
+  animation: activeShimmer 4s linear infinite;
   color: #fff;
-  box-shadow: var(--shadow-gold);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: var(--shadow-gold), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateX(0);
 }
 .nav-item.active::before {
-  content: ''; position: absolute; left: -12px; top: 8px; bottom: 8px; width: 3px;
-  background: var(--gold); border-radius: 0 3px 3px 0;
+  content: ''; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 4px;
+  background: var(--gold);
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 0 12px var(--gold);
+}
+.nav-item.active .ico {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
 .sidebar-footer {
   margin-top: auto;
   background: linear-gradient(135deg, var(--gold-light), var(--warm-panel));
-  border: 1px solid var(--warm-border);
+  border: 1px solid rgba(212, 160, 23, 0.3);
   border-radius: 16px;
-  padding: 14px;
+  padding: 16px 14px 14px;
   text-align: center;
   position: relative; overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 4px 12px rgba(92, 58, 26, 0.06);
 }
 .sidebar-footer::before {
   content: ''; position: absolute; top: -20px; right: -20px;
   width: 80px; height: 80px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(212, 160, 23, 0.2), transparent 70%);
+  background: radial-gradient(circle, rgba(212, 160, 23, 0.25), transparent 70%);
+}
+.sidebar-footer::after {
+  content: '❋';
+  position: absolute;
+  top: 6px; left: 50%;
+  transform: translateX(-50%);
+  color: var(--gold);
+  font-size: 12px;
+  opacity: 0.7;
 }
 .sidebar-footer .quote {
   font-size: 12px; color: var(--warm-text-2); font-style: italic;
