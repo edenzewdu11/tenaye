@@ -11,6 +11,8 @@ export default function Chat({ companion, onMoodChange, onCrisis }) {
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [typing, setTyping] = useState(false)
+  const [speaking, setSpeaking] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
   const [crisis, setCrisis] = useState(null)
 
   const boxRef = useRef(null)
@@ -37,6 +39,14 @@ export default function Chat({ companion, onMoodChange, onCrisis }) {
     }
   }, [messages, onMoodChange])
 
+  function getCompanionMood() {
+    if (speaking) return 'speaking'
+    if (typing) return 'thinking'
+    if (sending) return 'listening'
+    if (isTyping) return 'listening'
+    return 'idle'
+  }
+
   async function send() {
     const text = input.trim()
     if (!text || sending) return
@@ -57,6 +67,7 @@ export default function Chat({ companion, onMoodChange, onCrisis }) {
       const res = await api.sendChat(text)
       setTyping(false)
       setMessages((m) => [...m, { id: `r-${Date.now()}`, role: 'assistant', content: res.reply, crisis_flag: !!res.crisis }])
+      setSpeaking(true)
       if (res.crisis) {
         onCrisis({ resources: res.resources, message: res.reply })
         haptic('heavy')
@@ -64,10 +75,11 @@ export default function Chat({ companion, onMoodChange, onCrisis }) {
       } else {
         onMoodChange?.('happy')
       }
+      setTimeout(() => setSpeaking(false), 2000)
     } catch (e) {
       setTyping(false)
       setMessages((m) => [...m, { id: `e-${Date.now()}`, role: 'assistant', content: `Error: ${e.message}` }])
-      onMoodChange?.('empathetic')
+      onMoodChange?.('confused')
     } finally {
       setSending(false)
     }
@@ -78,7 +90,7 @@ export default function Chat({ companion, onMoodChange, onCrisis }) {
       {crisis && <CrisisCard resources={crisis.resources} message={crisis.message} />}
       <div className="companion-chat-area">
         <div className="companion-col">
-          <Companion mood={typing ? 'thinking' : (sending ? 'listening' : 'idle')} companion={companion} showStatus={true} />
+          <Companion mood={getCompanionMood()} companion={companion} showStatus={true} />
         </div>
         <div className="chat-col">
           <div className="card">
@@ -114,7 +126,8 @@ export default function Chat({ companion, onMoodChange, onCrisis }) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && send()}
-                onFocus={() => onMoodChange?.('listening')}
+                onFocus={() => { setIsTyping(true); onMoodChange?.('listening') }}
+                onBlur={() => setIsTyping(false)}
               />
               <button className="btn" onClick={send} disabled={sending}>
                 {sending ? '...' : 'Send'}

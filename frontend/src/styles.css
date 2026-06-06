@@ -727,6 +727,8 @@ body::after {
 .companion-status .dot.speaking { background: var(--gold); }
 .companion-status .dot.happy { background: var(--green); }
 .companion-status .dot.empathetic { background: var(--green); }
+.companion-status .dot.confused { background: var(--terracotta); }
+.companion-status .dot.goodbye { background: var(--warm-muted); }
 .companion-status .dot.idle { background: var(--gold); }
 
 @keyframes dotPulse {
@@ -742,6 +744,11 @@ body::after {
 @keyframes emotionPop {
   from { transform: scale(0) rotate(-20deg); opacity: 0; }
   to   { transform: scale(1) rotate(0deg);  opacity: 1; }
+}
+
+@keyframes characterFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @keyframes companionFadeIn {
