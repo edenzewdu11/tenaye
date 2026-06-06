@@ -16,4 +16,7 @@ urlpatterns = [
     path("dashboard/", views.dashboard),
     path("voice/", views.voice_journal),
     path("journals/", views.journals),
+    path("recommendations/", views.recommendations, name="recommendations"),
+    path("explore/", views.explore, name="explore"),
 ]
+

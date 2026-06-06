@@ -56,10 +56,20 @@ TEMPLATES = [
 WSGI_APPLICATION = "core.wsgi.application"
 
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
-if DATABASE_URL:
-    ssl_require = "sslmode=require" in DATABASE_URL
+if DATABASE_URL and "db:5432" not in DATABASE_URL:
     DATABASES = {
-        "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=ssl_require)
+        "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+    }
+elif "db:5432" in DATABASE_URL:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "tena",
+            "USER": "tena_user",
+            "PASSWORD": "tena_password",
+            "HOST": "db",
+            "PORT": 5432,
+        }
     }
 else:
     DATABASES = {

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
 import { haptic } from '../telegram'
 
-export default function VoiceJournal({ onCrisis }) {
+export default function VoiceJournal({ onCrisis, onRecommendationsUpdated }) {
   const [recording, setRecording] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [result, setResult] = useState(null)
@@ -55,6 +55,9 @@ export default function VoiceJournal({ onCrisis }) {
       const res = await api.uploadVoice(blob, blob.type)
       setResult(res)
        if (res.crisis) onCrisis({ resources: res.resources, message: res.reply })
+       if (res.has_new_recommendations) {
+         onRecommendationsUpdated?.()
+       }
        const list = await api.journals()
        setEntries(list)
     } catch (e) {

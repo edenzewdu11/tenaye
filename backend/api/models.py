@@ -63,3 +63,20 @@ class JournalEntry(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class LocationRecommendation(models.Model):
+    user = models.ForeignKey(TgUser, on_delete=models.CASCADE, related_name="recommendations")
+    name = models.CharField(max_length=128)
+    category = models.CharField(max_length=64, blank=True, default="Place")
+    description = models.TextField(blank=True, default="")
+    reason = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ("user", "name")
+
+    def __str__(self):
+        return f"{self.name} ({self.category}) for {self.user}"
+

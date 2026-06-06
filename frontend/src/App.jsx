@@ -10,6 +10,7 @@ import Companion from './components/Companion'
 import Onboarding from './components/Onboarding'
 import Customize from './components/Customize'
 import QRCode from './components/QRCode'
+import Explore from './components/Explore'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Welcome from './pages/Welcome'
@@ -21,6 +22,7 @@ const NAV = [
   { key: 'home', label: 'Home', ico: '🏡', section: 'Wellness' },
   { key: 'chat', label: 'Chat', ico: '💬', section: 'Wellness' },
   { key: 'voice', label: 'Voice Journal', ico: '🎙️', section: 'Wellness' },
+  { key: 'explore', label: 'Explore Places', ico: '🗺️', section: 'Wellness' },
   { key: 'qr', label: 'Share Bot', ico: '📱', section: 'Share' },
   { key: 'customize', label: 'My Companion', ico: '🎨', section: 'Companion' },
   { key: 'stats', label: 'Progress', ico: '📊', section: 'Insights' },
@@ -75,6 +77,14 @@ const PAGES = {
     heroBody: 'Every check-in, every conversation, every step forward matters.',
     heroIcon: '📊',
   },
+  explore: {
+    title: 'Explore',
+    accent: 'Places',
+    sub: 'Tell Tena what you feel like doing — and discover where to go.',
+    heroTitle: 'Your city, your vibe',
+    heroBody: 'Parks, cafes, cinemas, game zones — Tena knows Addis. Just say what you\'re in the mood for.',
+    heroIcon: '🗺️',
+  },
 }
 
 function ProtectedRoute({ children }) {
@@ -107,6 +117,19 @@ function MainApp() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
+  const [activeCrisis, setActiveCrisis] = useState(null)
+  const [recommendations, setRecommendations] = useState([])
+
+  const fetchRecommendations = useCallback(() => {
+    api.getRecommendations()
+      .then(setRecommendations)
+      .catch((e) => console.error("Failed to fetch recommendations:", e))
+  }, [])
+
+  useEffect(() => {
+    api.me().then(setMe).catch((e) => setErr(e.message))
+    fetchRecommendations()
+  }, [fetchRecommendations])
   const isMobile = () => window.innerWidth < 820
 
   useEffect(() => {
@@ -299,6 +322,33 @@ function MainApp() {
                 </div>
               </div>
 
+            <div className="home-quick-grid">
+              <button className="quick-tile q-gold" onClick={() => setTab('chat')}>
+                <div className="quick-ico">💬</div>
+                <div className="quick-title">Talk to Tena</div>
+                <div className="quick-sub">Vent, reflect, code-switch</div>
+              </button>
+              <button className="quick-tile q-terra" onClick={() => setTab('voice')}>
+                <div className="quick-ico">🎙️</div>
+                <div className="quick-title">Voice Journal</div>
+                <div className="quick-sub">Speak it, release it</div>
+              </button>
+              <button className="quick-tile q-green" onClick={() => setTab('stats')}>
+                <div className="quick-ico">📈</div>
+                <div className="quick-title">My Progress</div>
+                <div className="quick-sub">Last 7 days at a glance</div>
+              </button>
+              <button className="quick-tile q-coffee" onClick={() => setTab('explore')}>
+                <div className="quick-ico">🗺️</div>
+                <div className="quick-title">Explore Places</div>
+                <div className="quick-sub">Find your next outing</div>
+              </button>
+            </div>
+
+            <div className="home-bottom-section">
+              <div className="home-checkin-tip-row">
+                <div className="home-checkin-col">
+                  <CheckIn onLogged={handleCheckinLogged} />
               {/* Enhanced Quick Actions */}
               <div className="home-quick enhanced">
                 <div className="section-header">
@@ -386,6 +436,15 @@ function MainApp() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+        {tab === 'chat' && <Chat companion={companion} onMoodChange={setChatMood} onCrisis={setActiveCrisis} onRecommendationsUpdated={fetchRecommendations} />}
+        {tab === 'voice' && <VoiceJournal onCrisis={setActiveCrisis} onRecommendationsUpdated={fetchRecommendations} />}
+        {tab === 'explore' && <Explore />}
+        {tab === 'qr' && <QRCode />}
+        {tab === 'customize' && <Customize companion={companion} onUpdate={handleCompanionUpdate} />}
+        {tab === 'stats' && <Dashboard refreshKey={dashRefreshKey} />}
+
           )}
           {tab === 'chat' && <Chat me={me} />}
           {tab === 'voice' && <VoiceJournal me={me} />}
