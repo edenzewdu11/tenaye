@@ -154,10 +154,10 @@ def voice_journal(request):
     )
 
     if crisis:
-        ChatMessage.objects.create(user=user, role="user", content=transcript, is_voice=True, crisis_flag=True)
+        ChatMessage.objects.create(user=user, role="user", content=transcript, is_voice=True, crisis_flag=True, source='web')
         ChatMessage.objects.create(
             user=user, role="assistant",
-            content=CRISIS_RESPONSE["message"], crisis_flag=True,
+            content=CRISIS_RESPONSE["message"], crisis_flag=True, source='web',
         )
         return Response({
             "entry": JournalEntrySerializer(entry).data,
@@ -167,9 +167,9 @@ def voice_journal(request):
         })
 
     reply = data.get("reply", "")
-    ChatMessage.objects.create(user=user, role="user", content=transcript, is_voice=True)
+    ChatMessage.objects.create(user=user, role="user", content=transcript, is_voice=True, source='web')
     if reply:
-        ChatMessage.objects.create(user=user, role="assistant", content=reply)
+        ChatMessage.objects.create(user=user, role="assistant", content=reply, source='web')
 
     return Response({
         "entry": JournalEntrySerializer(entry).data,

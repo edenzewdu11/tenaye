@@ -135,13 +135,65 @@ def _fallback_reply(user_message: str) -> str:
     import random
     msg = (user_message or "").lower()
     
+    # Places to visit / go out
+    if any(k in msg for k in ["place", "go out", "where", "visit", "park", "cafe", "fun place", "bored", "boring"]):
+        responses = [
+            "🌳 Try visiting *Entoto Park* — fresh air, hiking trails, and a beautiful view of Addis. Great for clearing your mind!",
+            "☕ Go to *Tomoca Coffee* in Piassa — best coffee in Addis, perfect for journaling or just people-watching.",
+            "🌿 *Friendship Park* near Bole is peaceful — bring a book, walk around the lake, breathe.",
+            "🎨 Visit the *National Museum* or *Red Terror Martyrs' Memorial* — meaningful, quiet spaces to reflect.",
+            "🛍️ Shiro Meda or Merkato for some retail therapy — sometimes a little walk + people = mood boost.",
+            "⛰️ *Unity Park* at the Palace — gardens, animals, history. A whole-day reset.",
+            "🌅 *Sululta* for a day trip — the green hills outside Addis are healing."
+        ]
+        return random.choice(responses)
+    
+    # Food / eat suggestions
+    if any(k in msg for k in ["eat", "food", "hungry", "meal", "cook", "recipe", "injera"]):
+        responses = [
+            "🍲 Try a warm bowl of *shiro with injera* — comfort food that hugs your soul. Add some gomen for greens.",
+            "🥗 *Fasting food* (yetsom beyaynetu) is light, plant-based, and energizing. Perfect when you feel heavy.",
+            "🍵 A cup of *buna with himbasha bread* + 10 mins of silence = a tiny ceremony for yourself.",
+            "🥘 *Doro wat* on a hard day — the spice + the protein wakes you up. Or kitfo if you want comfort.",
+            "🌽 Kolo (roasted barley) and tea — a snack our grandmas knew was therapy.",
+            "🥑 Make an *avocado juice (avocado spris)* — fresh, sweet, takes 3 minutes.",
+            "🍞 If cooking feels heavy, just toast bread + honey + tea. Tiny meals count."
+        ]
+        return random.choice(responses)
+    
+    # Learning / hobbies / skills
+    if any(k in msg for k in ["learn", "hobby", "skill", "guitar", "instrument", "art", "draw", "paint", "code"]):
+        responses = [
+            "🎸 *Learn guitar* — 10 minutes a day with YouTube (search 'JustinGuitar'). In a month you'll play your first song.",
+            "🎨 Try *drawing* — get a cheap notebook, draw 1 thing daily. Doesn't have to be good. It just has to be done.",
+            "📚 Pick a book in your *mother tongue* — Sebhat Gebre-Egziabher, Adam Reta, or Bewketu Seyoum.",
+            "💻 *Learn to code* — start with freeCodeCamp.org. 1 hour a day, you'll build your first website in 2 weeks.",
+            "🎵 Learn the *kirar* or *masinko* — reconnecting with our music heals something deep.",
+            "📷 *Photography* with just your phone — pick a theme (doors, hands, sky) and shoot 5 photos a day.",
+            "✍️ *Journaling* — 3 lines every morning: how I feel, one goal, one thing I'm grateful for."
+        ]
+        return random.choice(responses)
+    
+    # To-do / planning / progress
+    if any(k in msg for k in ["todo", "to do", "plan", "schedule", "progress", "goal", "track", "list", "organize"]):
+        responses = [
+            "📋 *Today's wellness checklist:*\n☐ Drink 6 glasses of water\n☐ 10 min walk\n☐ Text 1 friend\n☐ 5 min deep breathing\n☐ Eat 1 fruit\n\nDoing 3/5 is already a win!",
+            "🎯 *3-Day Reset Plan:*\nDay 1: Sleep 8 hrs + walk 20 min\nDay 2: Cook 1 home meal + journal 5 lines\nDay 3: Call someone you miss + step outside\n\nSmall steps, big shifts.",
+            "📅 *Weekly Wellness Goals:*\n• 3x exercise (even 15 min walks)\n• 1x new place or activity\n• 1x deep talk with someone\n• 7x mood check-ins\n\nWhich one feels easiest to start?",
+            "✅ *Tonight's wind-down list:*\n☐ Phone away by 9pm\n☐ Warm shower\n☐ Stretch 5 min\n☐ Write tomorrow's top 3 tasks\n☐ Sleep before 11pm",
+            "🌱 *30-day micro-habit:* Pick ONE — water, walk, or journal. Do it daily for 30 days. That's it. Want me to check in with you?",
+            "📈 *Progress check:* On a scale of 1-10, how's your week so far? Tell me, and let's make a 2-step plan to improve it."
+        ]
+        return random.choice(responses)
+    
     # Academic/Study stress
     if any(k in msg for k in ["exam", "moe", "matric", "test", "study", "school", "university"]):
         responses = [
+            "📚 *Study plan idea:* 25 min focus + 5 min break (Pomodoro). Do 4 cycles, then a longer break. Try it for 1 hour today.",
             "Exams pressure is real — yene guadegna, breathe. What's the one subject weighing on you most right now?",
             "I know exam stress can feel overwhelming. Have you tried breaking study time into small 25-minute chunks?",
             "MoE season is tough. Remember to sleep - your brain needs rest to retain information.",
-            "You're capable of handling this. What study method has worked for you before?"
+            "✅ *Tonight's study list:* 1) Review hardest topic 30 min, 2) Practice 10 questions, 3) Sleep before 11pm. Small wins compound."
         ]
         return random.choice(responses)
     
