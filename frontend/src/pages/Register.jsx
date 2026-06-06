@@ -13,7 +13,7 @@ export default function Register() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   
-  const { register } = useAuth()
+  const { register, continueAsGuest } = useAuth()
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -147,6 +147,17 @@ export default function Register() {
         </form>
 
         <div className="auth-footer">
+          <button 
+            type="button" 
+            className="auth-button secondary"
+            onClick={() => {
+              continueAsGuest()
+              navigate('/')
+            }}
+          >
+            Skip - Continue as Guest
+          </button>
+          
           <p>
             Already have an account?{' '}
             <Link to="/login" className="auth-link">

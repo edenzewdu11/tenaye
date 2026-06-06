@@ -10,7 +10,7 @@ export default function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   
-  const { login } = useAuth()
+  const { login, continueAsGuest } = useAuth()
   const navigate = useNavigate()
 
   const handleChange = (e) => {
@@ -88,6 +88,17 @@ export default function Login() {
         </form>
 
         <div className="auth-footer">
+          <button 
+            type="button" 
+            className="auth-button secondary"
+            onClick={() => {
+              continueAsGuest()
+              navigate('/')
+            }}
+          >
+            Skip - Continue as Guest
+          </button>
+          
           <p>
             Don't have an account?{' '}
             <Link to="/register" className="auth-link">

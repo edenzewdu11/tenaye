@@ -2217,6 +2217,18 @@ body::after {
   cursor: not-allowed;
 }
 
+.auth-button.secondary {
+  background: transparent;
+  color: var(--warm-text-2);
+  border: 2px solid var(--warm-border);
+  margin-bottom: 16px;
+}
+
+.auth-button.secondary:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
 .auth-footer {
   text-align: center;
   margin-top: 24px;

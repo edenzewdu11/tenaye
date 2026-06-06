@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [tokens, setTokens] = useState(null)
+  const [isGuest, setIsGuest] = useState(false)
 
   useEffect(() => {
     // Check for existing tokens on mount
@@ -14,10 +15,19 @@ export function AuthProvider({ children }) {
     if (savedTokens) {
       const parsed = JSON.parse(savedTokens)
       setTokens(parsed)
+      setIsGuest(false)
       // Verify tokens are still valid by fetching profile
       fetchProfile(parsed.access)
     } else {
-      setLoading(false)
+      // Check if guest mode
+      const guestMode = localStorage.getItem('tena_guest_mode')
+      if (guestMode) {
+        setIsGuest(true)
+        // Create guest user
+        createGuestUser()
+      } else {
+        setLoading(false)
+      }
     }
   }, [])
 
@@ -80,6 +90,25 @@ export function AuthProvider({ children }) {
     }
   }
 
+  const createGuestUser = async () => {
+    try {
+      const userData = await api.me()
+      setUser(userData)
+      setLoading(false)
+    } catch (error) {
+      console.error('Error creating guest user:', error)
+      setLoading(false)
+    }
+  }
+
+  const continueAsGuest = () => {
+    setIsGuest(true)
+    localStorage.setItem('tena_guest_mode', 'true')
+    localStorage.removeItem('tena_tokens')
+    setTokens(null)
+    createGuestUser()
+  }
+
   const logout = async () => {
     try {
       if (tokens?.refresh) {
@@ -90,7 +119,9 @@ export function AuthProvider({ children }) {
     } finally {
       setUser(null)
       setTokens(null)
+      setIsGuest(false)
       localStorage.removeItem('tena_tokens')
+      localStorage.removeItem('tena_guest_mode')
     }
   }
 
@@ -100,6 +131,8 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    continueAsGuest,
+    isGuest,
     isAuthenticated: !!user
   }
 

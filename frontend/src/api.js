@@ -36,6 +36,14 @@ function authHeaders() {
 
 async function req(path, { method = 'GET', json, body, headers = {} } = {}) {
   const h = { ...authHeaders(), ...headers }
+  
+  // Add JWT token if available
+  const tokens = localStorage.getItem('tena_tokens')
+  if (tokens) {
+    const parsed = JSON.parse(tokens)
+    h['Authorization'] = `Bearer ${parsed.access}`
+  }
+  
   if (json !== undefined) {
     h['Content-Type'] = 'application/json'
     body = JSON.stringify(json)

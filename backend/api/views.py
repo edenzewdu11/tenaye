@@ -22,21 +22,14 @@ from .gemini import chat_reply, transcribe_and_analyze
 @api_view(["GET", "POST"])
 @permission_classes([IsWebOrAuthenticated])
 def me(request):
+    from .user_utils import get_web_user
+    
+    user = get_web_user(request)
+    
     if request.method == 'POST':
-        # Create or get web user
-        from .models import TgUser
-        import uuid
-        user, created = TgUser.objects.get_or_create(
-            telegram_id=f"web_{uuid.uuid4().hex[:16]}",
-            defaults={
-                'first_name': 'Web User',
-                'username': '',
-                'language_code': 'en'
-            }
-        )
         return Response(TgUserSerializer(user).data)
     
-    return Response(TgUserSerializer(request.user).data)
+    return Response(TgUserSerializer(user).data)
 
 
 # -------- Chat --------
@@ -44,7 +37,9 @@ def me(request):
 @parser_classes([JSONParser])
 @permission_classes([IsWebOrAuthenticated])
 def chat(request):
-    user = request.user
+    from .user_utils import get_web_user
+    
+    user = get_web_user(request)
     if request.method == "GET":
         msgs = ChatMessage.objects.filter(user=user, source='web')[:200]
         return Response(ChatMessageSerializer(msgs, many=True).data)
