@@ -7,7 +7,6 @@ import Dashboard from './components/Dashboard'
 import CheckIn from './components/CheckIn'
 import Companion from './components/Companion'
 import Onboarding from './components/Onboarding'
-import Customize from './components/Customize'
 import QRCode from './components/QRCode'
 import Explore from './components/Explore'
 import Login from './pages/Login'
@@ -23,7 +22,6 @@ const NAV = [
   { key: 'voice', label: 'Voice Journal', ico: '🎙️', section: 'Wellness' },
   { key: 'explore', label: 'Explore Places', ico: '🗺️', section: 'Wellness' },
   { key: 'qr', label: 'Share Bot', ico: '📱', section: 'Share' },
-  { key: 'customize', label: 'My Companion', ico: '🎨', section: 'Companion' },
   { key: 'stats', label: 'Progress', ico: '📊', section: 'Insights' },
 ]
 
@@ -68,15 +66,7 @@ const PAGES = {
     heroBody: 'Help others discover their path to mental well-being.',
     heroIcon: '📱',
   },
-  customize: {
-    title: 'My',
-    accent: 'Companion',
-    sub: 'Personalize your wellness companion.',
-    heroTitle: 'Make it yours',
-    heroBody: 'Choose the look, feel, and personality that resonates with you.',
-    heroIcon: '🎨',
-  },
-  stats: {
+    stats: {
     title: 'Your',
     accent: 'Progress',
     sub: 'Track your wellness journey over time.',
@@ -400,7 +390,6 @@ function MainApp() {
           {tab === 'voice' && <VoiceJournal me={me} />}
           {tab === 'explore' && <Explore />}
           {tab === 'qr' && <QRCode />}
-          {tab === 'customize' && <Customize me={me} setMe={setMe} />}
           {tab === 'stats' && <Dashboard me={me} />}
         </div>
       </main>
